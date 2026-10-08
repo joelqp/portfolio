@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portfolio — prototipo base</title><style>body{margin:0;padding:16px;background:light-dark(#ffffff,#101211);color-scheme:light dark}button,select,summary{cursor:pointer}@media(max-width:500px){body{padding:8px}}</style></head><body>
+<div id="system-trace-portfolio">
+<style>
+
+    #system-trace-portfolio {
+      --st-paper: light-dark(#f2efe7, #111412);
+      --st-panel: light-dark(#fbfaf5, #1a1e1b);
+      --st-ink: light-dark(#17201c, #eef2ec);
+      --st-muted: light-dark(#69726d, #aeb7b1);
+      --st-line: light-dark(#cdd1c9, #3a423d);
+      --st-signal: light-dark(#e74d35, #ff816c);
+      --st-signal-soft: light-dark(#f6d9d1, #48231d);
+      --st-grid: light-dark(rgba(46, 58, 52, .08), rgba(225, 235, 228, .07));
+      color-scheme: light dark;
+      width: 100%;
+      color: var(--st-ink);
+      background: transparent;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+
+    #system-trace-portfolio * { box-sizing: border-box; }
+    #system-trace-portfolio button, #system-trace-portfolio select { font: inherit; }
+
+    #system-trace-portfolio .st-window {
+      overflow: hidden;
+      min-height: 740px;
+      border: 1px solid var(--st-line);
+      border-radius: 18px;
+      background: var(--st-paper);
+      box-shadow: 0 20px 64px light-dark(rgba(21, 29, 25, .14), rgba(0, 0, 0, .34));
+    }
+
+    #system-trace-portfolio .st-topbar {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 11px 24px;
+      border-bottom: 1px solid var(--st-line);
+      background: color-mix(in srgb, var(--st-paper) 95%, transparent);
+    }
+
+    #system-trace-portfolio .st-brand {
+      border: 0;
+      background: transparent;
+      color: var(--st-ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    #system-trace-portfolio .st-top-actions { display: flex; align-items: center; gap: 16px; }
+    #system-trace-portfolio .st-link { border: 0; background: transparent; color: var(--st-muted); font-size: 12px; }
+    #system-trace-portfolio .st-button-primary,
+    #system-trace-portfolio .st-button-secondary {
+      min-height: 39px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 15px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    #system-trace-portfolio .st-button-primary { border: 1px solid var(--st-ink); background: var(--st-ink); color: var(--st-paper); }
+    #system-trace-portfolio .st-button-secondary { border: 1px solid var(--st-line); background: transparent; color: var(--st-ink); }
+
+    #system-trace-portfolio .st-landing {
+      position: relative;
+      min-height: 690px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(245px, .65fr);
+      gap: 64px;
+      align-items: center;
+      padding: 72px 8%;
+      overflow: hidden;
+      background-image: radial-gradient(circle at 1px 1px, var(--st-grid) 1px, transparent 0);
+      background-size: 23px 23px;
+    }
+
+    #system-trace-portfolio .st-landing::after {
+      content: "";
+      position: absolute;
+      right: -120px;
+      bottom: -220px;
+      width: 520px;
+      height: 520px;
+      border: 2px solid var(--st-signal);
+      border-radius: 50%;
+      opacity: .24;
+    }
+
+    #system-trace-portfolio .st-kicker {
+      margin: 0 0 17px;
+      color: var(--st-signal);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    #system-trace-portfolio h1 {
+      margin: 0;
+      max-width: 720px;
+      font-family: Georgia, ui-serif, serif;
+      font-size: clamp(52px, 7.5vw, 86px);
+      font-weight: 500;
+      line-height: .93;
+      letter-spacing: -.06em;
+    }
+
+    #system-trace-portfolio .st-lead { max-width: 620px; margin: 25px 0 29px; color: var(--st-muted); font-size: 15px; line-height: 1.65; }
+    #system-trace-portfolio .st-landing-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+
+    #system-trace-portfolio .st-profile {
+      position: relative;
+      z-index: 1;
+      padding: 27px 0 27px 28px;
+      border-left: 1px solid var(--st-line);
+    }
+    #system-trace-portfolio .st-profile-block + .st-profile-block { margin-top: 25px; padding-top: 22px; border-top: 1px solid var(--st-line); }
+    #system-trace-portfolio .st-profile-label { display: block; margin-bottom: 7px; color: var(--st-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+    #system-trace-portfolio .st-profile strong { display: block; font-family: Georgia, ui-serif, serif; font-size: 19px; font-weight: 500; line-height: 1.25; }
+    #system-trace-portfolio .st-profile span:last-child { display: block; margin-top: 5px; color: var(--st-muted); font-size: 11px; line-height: 1.45; }
+
+    #system-trace-portfolio .st-entry-trace {
+      position: absolute;
+      left: 0;
+      bottom: 27px;
+      width: 39%;
+      height: 54px;
+      border-bottom: 3px solid var(--st-signal);
+    }
+    #system-trace-portfolio .st-entry-trace::after {
+      content: "";
+      position: absolute;
+      right: -16px;
+      bottom: -9px;
+      width: 17px;
+      height: 17px;
+      border: 4px solid var(--st-paper);
+      border-radius: 50%;
+      background: var(--st-signal);
+      box-shadow: 0 0 0 2px var(--st-signal);
+    }
+
+    #system-trace-portfolio .st-experience {
+      display: grid;
+      grid-template-columns: 210px minmax(0, 1fr);
+      min-height: 840px;
+    }
+
+    #system-trace-portfolio .st-navigator {
+      position: relative;
+      padding: 38px 18px 32px 22px;
+      overflow: hidden;
+      border-right: 1px solid var(--st-line);
+      background: color-mix(in srgb, var(--st-panel) 66%, var(--st-paper));
+    }
+    #system-trace-portfolio .st-navigator::before {
+      content: "";
+      position: absolute;
+      left: 41px;
+      top: 110px;
+      width: 3px;
+      height: 474px;
+      background: var(--st-line);
+      transform: rotate(3deg);
+      transform-origin: top;
+    }
+    #system-trace-portfolio .st-navigator::after {
+      content: "";
+      position: absolute;
+      left: 42px;
+      top: 111px;
+      width: 3px;
+      height: var(--st-progress, 0px);
+      background: var(--st-signal);
+      transform: rotate(3deg);
+      transform-origin: top;
+      transition: height .35s ease;
+    }
+
+    #system-trace-portfolio .st-nav-caption { margin-bottom: 36px; color: var(--st-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; letter-spacing: .13em; text-transform: uppercase; }
+    #system-trace-portfolio .st-trace-nodes { position: relative; z-index: 1; display: grid; gap: 12px; }
+    #system-trace-portfolio .st-trace-node {
+      min-height: 98px;
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--st-muted);
+      text-align: left;
+    }
+    #system-trace-portfolio .st-node-mark {
+      width: 20px;
+      height: 20px;
+      margin: 1px 0 0 10px;
+      border: 2px solid var(--st-line);
+      border-radius: 50%;
+      background: var(--st-panel);
+    }
+    #system-trace-portfolio .st-trace-node:nth-child(2) .st-node-mark { margin-left: 17px; }
+    #system-trace-portfolio .st-trace-node:nth-child(3) .st-node-mark { margin-left: 5px; }
+    #system-trace-portfolio .st-trace-node:nth-child(4) .st-node-mark { margin-left: 15px; }
+    #system-trace-portfolio .st-trace-node.is-active { color: var(--st-ink); }
+    #system-trace-portfolio .st-trace-node.is-active .st-node-mark { border-color: var(--st-signal); background: var(--st-signal); box-shadow: 0 0 0 6px var(--st-signal-soft); }
+    #system-trace-portfolio .st-node-index { display: block; margin-bottom: 4px; color: var(--st-signal); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+    #system-trace-portfolio .st-node-name { display: block; font-size: 13px; font-weight: 800; }
+    #system-trace-portfolio .st-node-detail { display: none; margin-top: 5px; color: var(--st-muted); font-size: 11px; line-height: 1.4; }
+    #system-trace-portfolio .st-trace-node.is-active .st-node-detail { display: block; }
+
+    #system-trace-portfolio .st-section-content { min-width: 0; padding: 48px 5.3% 58px; }
+    #system-trace-portfolio .st-section-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: end; margin-bottom: 31px; }
+    #system-trace-portfolio .st-overline { margin: 0 0 10px; color: var(--st-signal); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; letter-spacing: .13em; text-transform: uppercase; }
+    #system-trace-portfolio h2 { margin: 0; font-family: Georgia, ui-serif, serif; font-size: clamp(44px, 6vw, 68px); font-weight: 500; line-height: .96; letter-spacing: -.05em; }
+    #system-trace-portfolio .st-section-role { margin: 13px 0 0; color: var(--st-muted); font-size: 12px; }
+    #system-trace-portfolio .st-date { color: var(--st-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; white-space: nowrap; }
+
+    #system-trace-portfolio .st-aia-grid { display: grid; grid-template-columns: minmax(190px, .64fr) minmax(380px, 1.36fr); gap: 28px; align-items: start; }
+    #system-trace-portfolio .st-story { padding-top: 8px; }
+    #system-trace-portfolio .st-story h3 { margin: 0 0 10px; font-size: 14px; }
+    #system-trace-portfolio .st-story p { margin: 0 0 18px; color: var(--st-muted); font-size: 12px; line-height: 1.65; }
+    #system-trace-portfolio .st-story-rule { padding-top: 17px; border-top: 1px solid var(--st-line); }
+    #system-trace-portfolio .st-story-rule span { display: block; margin-bottom: 8px; color: var(--st-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+    #system-trace-portfolio .st-story-rule strong { display: block; font-size: 11px; line-height: 1.45; }
+
+    #system-trace-portfolio .st-demo { overflow: hidden; border: 1px solid var(--st-line); border-radius: 13px; background: var(--st-panel); }
+    #system-trace-portfolio .st-demo-tools { display: grid; grid-template-columns: minmax(0, 1fr) 135px; gap: 12px; align-items: end; padding: 14px; border-bottom: 1px solid var(--st-line); }
+    #system-trace-portfolio .st-label { display: block; margin-bottom: 6px; color: var(--st-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    #system-trace-portfolio .st-stops { display: flex; flex-wrap: wrap; gap: 6px; }
+    #system-trace-portfolio .st-stop { padding: 6px 8px; border-radius: 999px; background: color-mix(in srgb, var(--st-line) 40%, transparent); font-size: 11px; }
+    #system-trace-portfolio .st-stop b { color: var(--st-signal); }
+    #system-trace-portfolio .st-select { width: 100%; min-height: 35px; padding: 0 9px; border: 1px solid var(--st-line); border-radius: 7px; background: var(--st-paper); color: var(--st-ink); font-size: 11px; }
+
+    #system-trace-portfolio .st-map {
+      position: relative;
+      min-height: 276px;
+      overflow: hidden;
+      background-color: light-dark(#e4e5dd, #202622);
+      background-image:
+        linear-gradient(18deg, transparent 45%, var(--st-grid) 46%, var(--st-grid) 49%, transparent 50%),
+        linear-gradient(108deg, transparent 39%, var(--st-grid) 40%, var(--st-grid) 43%, transparent 44%);
+      background-size: 110px 82px, 154px 124px;
+    }
+    #system-trace-portfolio .st-map-note { position: absolute; top: 12px; left: 12px; padding: 5px 7px; border-radius: 5px; background: color-mix(in srgb, var(--st-panel) 92%, transparent); color: var(--st-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+    #system-trace-portfolio .st-route { position: absolute; left: 13%; top: 57%; width: 72%; height: 5px; border-radius: 99px; background: var(--st-signal); transform: rotate(-12deg); }
+    #system-trace-portfolio .st-route::after { content: ""; position: absolute; left: 47%; top: -44px; width: 35%; height: 47px; border-top: 5px solid var(--st-signal); border-right: 5px solid var(--st-signal); border-radius: 0 28px 0 0; transform: rotate(13deg); }
+    #system-trace-portfolio .st-map-node { position: absolute; z-index: 1; width: 22px; height: 22px; display: grid; place-items: center; border: 3px solid var(--st-signal); border-radius: 50%; background: var(--st-panel); color: var(--st-signal); font-size: 11px; font-weight: 800; }
+    #system-trace-portfolio .st-map-node-a { left: 11%; top: 64%; }
+    #system-trace-portfolio .st-map-node-b { left: 42%; top: 49%; }
+    #system-trace-portfolio .st-map-node-c { left: 67%; top: 29%; }
+    #system-trace-portfolio .st-map-node-d { right: 11%; top: 39%; }
+    #system-trace-portfolio .st-truck { position: absolute; z-index: 2; left: 49%; top: 45%; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; background: var(--st-ink); color: var(--st-paper); box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+    #system-trace-portfolio .st-demo-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--st-line); }
+    #system-trace-portfolio .st-result { color: var(--st-muted); font-size: 11px; }
+    #system-trace-portfolio .st-result strong { color: var(--st-ink); font-size: 12px; }
+    #system-trace-portfolio .st-demo-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    #system-trace-portfolio .st-inspection { margin-top: 15px; border-top: 4px solid var(--st-ink); background: var(--st-panel); }
+    #system-trace-portfolio .st-inspection-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; border: 1px solid var(--st-line); border-top: 0; background: transparent; color: var(--st-ink); text-align: left; }
+    #system-trace-portfolio .st-inspection-toggle strong { display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+    #system-trace-portfolio .st-inspection-toggle span span { display: block; margin-top: 4px; color: var(--st-muted); font-size: 11px; }
+    #system-trace-portfolio .st-inspection-mark { color: var(--st-signal); font-size: 18px; }
+    #system-trace-portfolio .st-inspection-body { display: grid; grid-template-columns: .7fr 1.3fr; border: 1px solid var(--st-line); border-top: 0; }
+    #system-trace-portfolio .st-inspection[aria-expanded="false"] .st-inspection-body { display: none; }
+    #system-trace-portfolio .st-method { padding: 16px; border-right: 1px solid var(--st-line); }
+    #system-trace-portfolio .st-method h3 { margin: 0 0 8px; font-family: Georgia, ui-serif, serif; font-size: 22px; font-weight: 500; }
+    #system-trace-portfolio .st-method p { margin: 0 0 12px; color: var(--st-muted); font-size: 11px; line-height: 1.55; }
+    #system-trace-portfolio .st-method dl { margin: 0; display: grid; gap: 7px; font-size: 11px; }
+    #system-trace-portfolio .st-method dl div { display: grid; grid-template-columns: 63px 1fr; gap: 8px; }
+    #system-trace-portfolio .st-method dt { color: var(--st-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    #system-trace-portfolio .st-method dd { margin: 0; }
+    #system-trace-portfolio .st-code { padding: 16px; background: light-dark(#17201c, #090c0a); color: #edf1ec; }
+    #system-trace-portfolio .st-code-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; color: #aab5ae; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+    #system-trace-portfolio pre { margin: 0; overflow: auto; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; line-height: 1.65; }
+
+    #system-trace-portfolio .st-alt-view { min-height: 610px; display: grid; place-items: center; padding: 36px; border: 1px dashed var(--st-line); background: var(--st-panel); }
+    #system-trace-portfolio .st-alt-inner { max-width: 650px; text-align: center; }
+    #system-trace-portfolio .st-alt-inner h3 { margin: 0 0 12px; font-family: Georgia, ui-serif, serif; font-size: 34px; font-weight: 500; }
+    #system-trace-portfolio .st-alt-inner p { margin: 0; color: var(--st-muted); font-size: 12px; line-height: 1.6; }
+    #system-trace-portfolio .st-placeholder-visual { margin: 28px auto 0; width: min(100%, 480px); min-height: 190px; display: grid; place-items: center; border: 1px solid var(--st-line); background: var(--st-paper); color: var(--st-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+
+    #system-trace-portfolio .st-build { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--st-line); border: 1px solid var(--st-line); }
+    #system-trace-portfolio .st-build-block { min-height: 160px; padding: 22px; background: var(--st-panel); }
+    #system-trace-portfolio .st-build-block span { display: block; margin-bottom: 9px; color: var(--st-signal); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+    #system-trace-portfolio .st-build-block h3 { margin: 0 0 8px; font-size: 13px; }
+    #system-trace-portfolio .st-build-block p { margin: 0; color: var(--st-muted); font-size: 11px; line-height: 1.55; }
+
+    #system-trace-portfolio [hidden] { display: none !important; }
+
+    @container st-shell (max-width: 820px) {
+      #system-trace-portfolio .st-landing { grid-template-columns: 1fr; gap: 36px; }
+      #system-trace-portfolio .st-profile { padding: 22px 0 0; border-left: 0; border-top: 1px solid var(--st-line); }
+      #system-trace-portfolio .st-experience { grid-template-columns: 142px minmax(0, 1fr); }
+      #system-trace-portfolio .st-navigator { padding: 28px 10px 24px 13px; border-right: 1px solid var(--st-line); border-bottom: 0; }
+      #system-trace-portfolio .st-navigator::before, #system-trace-portfolio .st-navigator::after { left: 31px; right: auto; top: 91px; width: 3px; transform: rotate(2deg); }
+      #system-trace-portfolio .st-navigator::before { height: 416px; }
+      #system-trace-portfolio .st-navigator::after { width: 3px; }
+      #system-trace-portfolio .st-nav-caption { margin-bottom: 29px; }
+      #system-trace-portfolio .st-trace-nodes { grid-template-columns: 1fr; gap: 8px; }
+      #system-trace-portfolio .st-trace-node { min-height: 92px; display: grid; grid-template-columns: 31px minmax(0, 1fr); text-align: left; }
+      #system-trace-portfolio .st-node-mark, #system-trace-portfolio .st-trace-node:nth-child(n) .st-node-mark { margin: 1px 0 0 8px; }
+      #system-trace-portfolio .st-node-detail { display: none !important; }
+      #system-trace-portfolio .st-aia-grid { grid-template-columns: 1fr; }
+    }
+
+    @container st-shell (max-width: 560px) {
+      #system-trace-portfolio .st-topbar { padding: 10px 14px; }
+      #system-trace-portfolio .st-top-actions .st-link { display: none; }
+      #system-trace-portfolio .st-landing { min-height: 0; padding: 52px 21px 76px; }
+      #system-trace-portfolio h1 { font-size: 55px; }
+      #system-trace-portfolio .st-experience { grid-template-columns: 78px minmax(0, 1fr); }
+      #system-trace-portfolio .st-navigator { padding: 24px 7px 20px; }
+      #system-trace-portfolio .st-nav-caption { writing-mode: vertical-rl; margin: 0 auto 22px; height: 104px; }
+      #system-trace-portfolio .st-navigator::before, #system-trace-portfolio .st-navigator::after { left: 38px; top: 160px; }
+      #system-trace-portfolio .st-trace-node { min-height: 82px; display: block; text-align: center; }
+      #system-trace-portfolio .st-node-mark, #system-trace-portfolio .st-trace-node:nth-child(n) .st-node-mark { margin: 0 auto 7px; }
+      #system-trace-portfolio .st-node-index { display: none; }
+      #system-trace-portfolio .st-node-name { font-size: 11px; overflow-wrap: anywhere; }
+      #system-trace-portfolio .st-section-content { padding: 38px 14px 48px; }
+      #system-trace-portfolio .st-section-head { grid-template-columns: 1fr; gap: 10px; }
+      #system-trace-portfolio .st-demo-tools { grid-template-columns: 1fr; }
+      #system-trace-portfolio .st-inspection-body { grid-template-columns: 1fr; }
+      #system-trace-portfolio .st-method { border-right: 0; border-bottom: 1px solid var(--st-line); }
+      #system-trace-portfolio .st-build { grid-template-columns: 1fr; }
+      #system-trace-portfolio .st-trace-node { font-size: 11px; }
+    }
+  
+/* The source prototype remains the visual baseline. These rules adapt its structure. */
+#system-trace-portfolio{--st-bank-path-image:none;--st-file-path-image:none;--st-road-path-image:none;--st-bank-node-image:none;--st-file-node-image:none;--st-vehicle-node-image:none;}
+#system-trace-portfolio .st-window{container:st-shell / inline-size;max-width:1180px;margin:0 auto;min-height:0}
+#system-trace-portfolio.is-mobile .st-window{max-width:390px}
+#system-trace-portfolio .st-preview-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding-right:90px;font-size:12px}
+#system-trace-portfolio .st-preview-controls button{padding:9px 13px;border:1px solid var(--st-line);border-radius:7px;background:var(--st-panel);color:var(--st-ink)}
+#system-trace-portfolio .st-preview-controls button[aria-pressed=true]{background:var(--st-ink);color:var(--st-paper)}
+#system-trace-portfolio .st-preview-controls span{color:var(--st-muted);font-size:11px}
+#system-trace-portfolio button{cursor:inherit}#system-trace-portfolio button:disabled{opacity:.5;cursor:not-allowed}
+#system-trace-portfolio button:focus-visible,#system-trace-portfolio select:focus-visible,#system-trace-portfolio input:focus-visible,#system-trace-portfolio summary:focus-visible{outline:2px solid var(--st-signal);outline-offset:3px}
+#system-trace-portfolio .st-topbar{flex-wrap:wrap;gap:14px;padding:12px 22px}
+#system-trace-portfolio .st-top-actions{margin-left:auto;gap:17px;flex-wrap:wrap}
+#system-trace-portfolio .st-header-extra{display:flex;gap:14px;align-items:center}
+#system-trace-portfolio .st-languages{display:flex;gap:4px}
+#system-trace-portfolio .st-languages button{border:0;background:transparent;color:var(--st-muted);padding:8px 5px;font-size:11px}
+#system-trace-portfolio .st-languages button[aria-pressed=true]{color:var(--st-ink);text-decoration:underline;text-underline-offset:5px}
+#system-trace-portfolio .st-top-actions [aria-current=page]{color:var(--st-ink);text-decoration:underline;text-underline-offset:5px}
+#system-trace-portfolio .st-experience{min-height:780px;grid-template-columns:185px minmax(0,1fr)}
+#system-trace-portfolio .st-navigator{padding:28px 16px;overflow:visible}
+#system-trace-portfolio .st-navigator::before,#system-trace-portfolio .st-navigator::after{display:none}
+#system-trace-portfolio .st-nav-caption{margin-bottom:25px;line-height:1.5;font-size:11px}
+#system-trace-portfolio .st-path-art{position:absolute;left:36px;top:102px;width:10px;height:325px;background-image:var(--st-bank-path-image);background-size:100% 100%;border-left:2px solid var(--st-line);border-right:2px solid var(--st-line);pointer-events:none}
+#system-trace-portfolio [data-theme=altia] .st-path-art{background-image:var(--st-file-path-image);border-left:0;border-right:0;background-color:transparent;background-image:var(--st-file-path-image),repeating-linear-gradient(to bottom,var(--st-line) 0 5px,transparent 5px 11px);width:3px;left:39px}
+#system-trace-portfolio [data-theme=aia] .st-path-art{background-image:var(--st-road-path-image),repeating-linear-gradient(to bottom,var(--st-paper) 0 9px,var(--st-muted) 9px 17px);background-color:var(--st-muted);border-left:3px solid var(--st-muted);border-right:3px solid var(--st-muted);width:13px;left:34px}
+#system-trace-portfolio [data-theme=education] .st-path-art{border:0;width:2px;background:var(--st-line);left:40px}
+#system-trace-portfolio .st-trace-node{position:relative;grid-template-columns:42px minmax(0,1fr);min-height:100px;gap:8px;align-items:start}
+#system-trace-portfolio .st-node-mark,#system-trace-portfolio .st-trace-node:nth-child(n) .st-node-mark{position:relative;display:block;width:25px;height:25px;margin:2px auto 0;background-color:var(--st-panel);border:2px solid var(--st-muted);box-shadow:0 0 0 5px var(--st-paper);color:var(--st-muted)}
+#system-trace-portfolio .st-trace-node.is-active .st-node-mark{background-color:var(--st-panel);border-color:var(--st-signal);color:var(--st-signal);box-shadow:0 0 0 5px var(--st-signal-soft)}
+#system-trace-portfolio .st-node-mark.st-icon-card{width:33px;height:23px;border-radius:4px;background-image:var(--st-bank-node-image);background-size:contain}
+#system-trace-portfolio .st-icon-card::after{content:"";position:absolute;left:0;right:0;top:5px;height:4px;background:currentColor}
+#system-trace-portfolio .st-node-mark.st-icon-file{width:23px;height:29px;border-radius:2px;background-image:var(--st-file-node-image);background-size:contain}
+#system-trace-portfolio .st-icon-file::after{content:"";position:absolute;left:4px;top:9px;width:11px;height:7px;border-top:2px solid currentColor;border-bottom:2px solid currentColor}
+#system-trace-portfolio .st-node-mark.st-icon-car{width:33px;height:17px;border-radius:5px;margin-top:7px;background-image:var(--st-vehicle-node-image);background-size:contain}
+#system-trace-portfolio .st-icon-car::before{content:"";position:absolute;left:5px;top:-7px;width:19px;height:8px;border:2px solid currentColor;border-bottom:0;border-radius:5px 5px 0 0;background:var(--st-panel)}
+#system-trace-portfolio .st-icon-car::after{content:"";position:absolute;bottom:-5px;left:4px;width:6px;height:6px;background:currentColor;box-shadow:16px 0 0 currentColor;border-radius:50%}
+#system-trace-portfolio .st-node-name{font-size:13px}#system-trace-portfolio .st-node-detail{font-size:11px}
+#system-trace-portfolio .st-path-note{font-size:11px;line-height:1.5;margin:26px 0 0;color:var(--st-muted)}
+#system-trace-portfolio .st-section-content{padding:38px 4% 30px}
+#system-trace-portfolio .st-section-head{grid-template-columns:1fr;gap:12px;margin-bottom:28px}
+#system-trace-portfolio h2{font-size:clamp(40px,5cqw,62px);overflow-wrap:anywhere}
+#system-trace-portfolio .st-aia-grid{grid-template-columns:minmax(170px,.72fr) minmax(0,1.28fr);gap:25px}
+#system-trace-portfolio .st-story-rule{margin-bottom:17px}#system-trace-portfolio .st-story p{font-size:13px}
+#system-trace-portfolio .st-disclaimer{font-size:11px!important}
+#system-trace-portfolio .st-page-content{padding:48px 7%;min-height:640px}
+#system-trace-portfolio .st-global-footer{border-top:1px solid var(--st-line);padding:15px 24px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--st-muted);font-size:11px}
+#system-trace-portfolio .st-demo{overflow:visible}
+#system-trace-portfolio .st-demo-heading{padding:15px;border-bottom:1px solid var(--st-line)}
+#system-trace-portfolio .st-demo-heading h3{margin:0 0 5px;font-size:14px}
+#system-trace-portfolio .st-demo-heading p{margin:0;color:var(--st-muted);font-size:11px;line-height:1.5}
+#system-trace-portfolio .st-control-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:13px 14px}
+#system-trace-portfolio .st-control-row button{min-height:37px;border:1px solid var(--st-line);background:var(--st-paper);color:var(--st-ink);padding:6px 9px;font-size:11px;border-radius:6px}
+#system-trace-portfolio .st-control-row button[aria-pressed=true]{background:var(--st-ink);color:var(--st-paper);border-color:var(--st-ink)}
+#system-trace-portfolio .st-demo label{font-size:11px;color:var(--st-muted);display:block}
+#system-trace-portfolio .st-demo select,#system-trace-portfolio .st-demo input{max-width:100%;min-width:0;min-height:37px;background:var(--st-paper);color:var(--st-ink);border:1px solid var(--st-line);border-radius:5px;padding:6px;font:inherit;font-size:12px}
+#system-trace-portfolio .st-phone{max-width:290px;min-height:330px;margin:5px auto 18px;padding:17px 20px;border:2px solid var(--st-line);border-radius:25px;background:var(--st-paper)}
+#system-trace-portfolio .st-phone-bar{height:5px;width:62px;border-radius:9px;background:var(--st-ink);margin:0 auto 22px}
+#system-trace-portfolio .st-phone h4{margin:0 0 14px;font-size:19px;font-weight:500}
+#system-trace-portfolio .st-phone p{font-size:12px;line-height:1.5;color:var(--st-muted)}
+#system-trace-portfolio .st-bank-card{width:100%;text-align:left;border:1px solid var(--st-line);background:var(--st-panel);border-radius:9px;color:var(--st-ink);padding:15px;margin-bottom:12px;font-size:13px}
+#system-trace-portfolio .st-bank-card span{display:block;margin-top:12px;color:var(--st-muted);font-size:11px}
+#system-trace-portfolio .st-balance{font-size:29px;margin:10px 0 19px;font-variant-numeric:tabular-nums}
+#system-trace-portfolio .st-back{padding:0 0 16px;border:0;background:none;color:var(--st-muted);font-size:11px}
+#system-trace-portfolio .st-move{padding:9px 0;border-top:1px solid var(--st-line);display:flex;justify-content:space-between;gap:12px;font-size:11px}
+#system-trace-portfolio .st-notice{padding:12px;border-left:3px solid var(--st-signal);background:var(--st-signal-soft);font-size:12px;line-height:1.5;margin:12px 0}
+#system-trace-portfolio .st-technical{margin-top:15px;background:var(--st-panel);border-top:3px solid var(--st-ink);padding:13px}
+#system-trace-portfolio .st-technical summary{font:500 11px ui-monospace,monospace;cursor:inherit;line-height:1.5}
+#system-trace-portfolio .st-technical p{font-size:11px;line-height:1.6;color:var(--st-muted)}
+#system-trace-portfolio pre{font-size:11px;overflow-wrap:anywhere;white-space:pre-wrap;margin-top:12px;max-width:100%}
+#system-trace-portfolio .st-migration-list{padding:0 14px}
+#system-trace-portfolio .st-file-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 10px;border-top:1px solid var(--st-line);padding:11px 0;font-size:12px}
+#system-trace-portfolio .st-file-row strong{overflow-wrap:anywhere;font-weight:500}
+#system-trace-portfolio .st-file-row small{grid-column:1/-1;color:var(--st-muted);font-size:11px}
+#system-trace-portfolio .st-file-row[data-status=review] .st-file-status{color:var(--st-signal)}
+#system-trace-portfolio .st-file-status{font-size:11px;text-align:right}
+#system-trace-portfolio .st-corrections{border-top:1px solid var(--st-line);padding:13px 14px;display:grid;gap:12px}
+#system-trace-portfolio .st-corrections label>span{display:block;margin-bottom:5px}
+#system-trace-portfolio .st-corrections select,#system-trace-portfolio .st-corrections input{width:100%}
+#system-trace-portfolio .st-location-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:0 14px 13px}
+#system-trace-portfolio .st-location-grid label{display:grid;gap:4px}
+#system-trace-portfolio .st-network{display:block;width:100%;height:auto;background:var(--st-paper);border-top:1px solid var(--st-line);border-bottom:1px solid var(--st-line)}
+#system-trace-portfolio .st-network text{fill:var(--st-ink);font-family:ui-monospace,monospace;font-size:19px;font-weight:500}
+#system-trace-portfolio .st-route-summary{padding:12px 14px;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+#system-trace-portfolio .st-route-summary strong{font-weight:500}
+#system-trace-portfolio .st-route-state{border-top:1px solid var(--st-line);padding:12px 14px;font-size:12px;line-height:1.6;background:var(--st-paper);border-radius:0 0 13px 13px}
+#system-trace-portfolio .st-route-state p{margin:3px 0}
+#system-trace-portfolio .st-chapter-actions{display:flex;justify-content:space-between;gap:10px;margin-top:30px;border-top:1px solid var(--st-line);padding-top:19px}
+#system-trace-portfolio .st-pending{font-size:12px;line-height:1.6;color:var(--st-muted);margin-top:25px}
+#system-trace-portfolio .st-contact-list{max-width:600px}
+#system-trace-portfolio .st-contact-list>div{display:flex;justify-content:space-between;gap:20px;border-bottom:1px solid var(--st-line);padding:22px 0;font-size:13px}
+#system-trace-portfolio .st-contact-list span{color:var(--st-muted)}
+@container st-shell (max-width:1000px){#system-trace-portfolio .st-aia-grid{grid-template-columns:1fr}#system-trace-portfolio .st-story{max-width:630px}#system-trace-portfolio .st-experience{grid-template-columns:160px minmax(0,1fr)}}
+@container st-shell (max-width:600px){
+ #system-trace-portfolio .st-topbar{padding:15px 14px;gap:12px}#system-trace-portfolio .st-brand{max-width:100%;font-size:11px}#system-trace-portfolio .st-header-extra{margin-left:auto;gap:7px}#system-trace-portfolio .st-header-extra>.st-button-secondary{font-size:11px;min-height:36px;padding:0 8px}#system-trace-portfolio .st-top-actions{order:3;width:100%;margin:0;justify-content:space-between;gap:8px}#system-trace-portfolio .st-top-actions .st-link{display:block;padding:6px 0;font-size:11px}
+ #system-trace-portfolio .st-landing{padding:40px 23px 70px;gap:26px;min-height:0;grid-template-columns:1fr}#system-trace-portfolio h1{font-size:clamp(43px,13cqw,60px)}#system-trace-portfolio .st-lead{font-size:14px;margin-top:23px}#system-trace-portfolio .st-profile{padding:20px 0 0}#system-trace-portfolio .st-profile-block+.st-profile-block{margin-top:17px;padding-top:17px}
+ #system-trace-portfolio .st-experience{display:block;min-height:0}#system-trace-portfolio .st-navigator{border-right:0;border-bottom:1px solid var(--st-line);padding:15px 8px 11px;overflow:hidden}#system-trace-portfolio .st-nav-caption{writing-mode:horizontal-tb;height:auto;margin:0 7px 17px;font-size:11px}#system-trace-portfolio .st-trace-nodes{grid-template-columns:repeat(4,minmax(0,1fr));gap:2px}#system-trace-portfolio .st-trace-node{display:flex;flex-direction:column;align-items:center;min-height:67px;gap:8px;text-align:center}#system-trace-portfolio .st-node-index,#system-trace-portfolio .st-node-detail{display:none!important}#system-trace-portfolio .st-node-name{font-size:11px;overflow-wrap:normal}#system-trace-portfolio .st-node-mark,#system-trace-portfolio .st-trace-node:nth-child(n) .st-node-mark{margin:0 auto;height:25px}#system-trace-portfolio .st-node-mark.st-icon-card{height:23px}#system-trace-portfolio .st-node-mark.st-icon-file{height:26px}#system-trace-portfolio .st-node-mark.st-icon-car{height:17px;margin-top:7px;margin-bottom:2px}#system-trace-portfolio .st-path-note{margin:4px 7px 0;font-size:11px}
+ #system-trace-portfolio .st-path-art{left:12%;top:57px;width:76%;height:8px;border:0;border-top:2px solid var(--st-line);border-bottom:2px solid var(--st-line)}#system-trace-portfolio [data-theme=altia] .st-path-art{left:12%;top:60px;width:76%;height:3px;background-image:var(--st-file-path-image),repeating-linear-gradient(to right,var(--st-line) 0 5px,transparent 5px 11px)}#system-trace-portfolio [data-theme=aia] .st-path-art{left:12%;top:56px;width:76%;height:12px;border:0;border-top:3px solid var(--st-muted);border-bottom:3px solid var(--st-muted);background-image:var(--st-road-path-image),repeating-linear-gradient(to right,var(--st-paper) 0 9px,var(--st-muted) 9px 17px)}#system-trace-portfolio [data-theme=education] .st-path-art{left:12%;top:59px;width:76%;height:2px}
+ #system-trace-portfolio .st-section-content{padding:30px 15px}#system-trace-portfolio h2{font-size:44px}#system-trace-portfolio .st-section-head{gap:9px;margin-bottom:22px}#system-trace-portfolio .st-section-role{font-size:12px;line-height:1.6}#system-trace-portfolio .st-aia-grid{gap:19px}#system-trace-portfolio .st-page-content{padding:35px 21px;min-height:500px}#system-trace-portfolio .st-build{grid-template-columns:1fr}#system-trace-portfolio .st-contact-list>div{flex-direction:column;gap:6px}#system-trace-portfolio .st-phone{max-width:265px;margin-left:12px;margin-right:12px}#system-trace-portfolio .st-global-footer{padding:15px}
+ #system-trace-portfolio .st-demo select,#system-trace-portfolio .st-demo input{font-size:16px}#system-trace-portfolio button:not(.st-preview-controls button){min-height:40px}
+}
+@media(prefers-reduced-motion:reduce){#system-trace-portfolio *,#system-trace-portfolio *::before,#system-trace-portfolio *::after{transition:none!important;animation:none!important}}
+
+</style>
+<div class="st-preview-controls" aria-label="Vista del prototipo">
+  <button type="button" data-viewport="desktop" aria-pressed="true">Escritorio</button>
+  <button type="button" data-viewport="mobile" aria-pressed="false">Móvil · 390 px</button>
+  <span>Prototipo · imágenes y estilos pendientes</span>
+</div>
+<div class="st-window">
+  <header class="st-topbar">
+    <button class="st-brand" data-page="home" type="button" data-en="YOUR NAME / SOFTWARE">TU NOMBRE / SOFTWARE</button>
+    <nav class="st-top-actions" aria-label="Navegación principal">
+      <button class="st-link" data-page="profile" type="button" data-en="Profile">Perfil</button>
+      <button class="st-link" data-page="build" type="button" data-en="How I built it">Cómo lo construí</button>
+      <button class="st-link" data-page="contact" type="button" data-en="Contact">Contacto</button>
+    </nav>
+    <div class="st-header-extra"><div class="st-languages" aria-label="Idioma"><button type="button" data-lang="es" aria-pressed="true">ES</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div><button class="st-button-secondary" disabled type="button" data-en="CV pending">CV pendiente</button></div>
+  </header>
+  <section class="st-landing" data-page-panel="home">
+    <div><p class="st-kicker" data-en="Software engineering · Backend direction">Ingeniería de software · Orientación backend</p><h1 data-en="Data, logic and product. Connected.">Datos, lógica y producto conectados.</h1><p class="st-lead" data-en="My experience developing interfaces, integrating API data and turning business requirements into usable flows. Explore it through three personal recreations.">Mi experiencia desarrollando interfaces, integrando datos de APIs y convirtiendo requisitos de negocio en flujos utilizables. Explórala con tres recreaciones personales.</p><div class="st-landing-actions"><button class="st-button-primary" type="button" data-page="profile" data-en="Start the journey →">Iniciar recorrido →</button><button class="st-button-secondary" type="button" data-section="education" data-en="Education and skills">Formación y tecnologías</button></div></div>
+    <aside class="st-profile" aria-label="Resumen profesional"><div class="st-profile-block"><span class="st-profile-label" data-en="Currently">Actualmente</span><strong data-en="Software engineer">Ingeniero de software</strong><span data-en="CaixaBank Tech · since October 2024">CaixaBank Tech · desde octubre de 2024</span></div><div class="st-profile-block"><span class="st-profile-label" data-en="Education">Estudios</span><strong data-en="Computer Engineering">Ingeniería Informática</strong><span data-en="Computing specialization · Universitat Autònoma de Barcelona · 2019–2024">Mención en Computación · Universitat Autònoma de Barcelona · 2019–2024</span></div><div class="st-profile-block"><span class="st-profile-label" data-en="Journey">Recorrido</span><strong>CaixaBank → ALTIA → AIA</strong><span data-en="From the most recent experience to the first.">De la experiencia más reciente a la primera.</span></div></aside><div class="st-entry-trace" aria-hidden="true"></div>
+  </section>
+  <section class="st-experience" data-page-panel="profile" hidden>
+    <aside class="st-navigator" data-theme="caixa" aria-label="Recorrido profesional">
+      <div class="st-nav-caption" data-en="Follow the path">Sigue el recorrido</div>
+      <div class="st-path-art" aria-hidden="true" data-asset-slot="journey-path"></div>
+      <nav class="st-trace-nodes" aria-label="Experiencias y formación">
+        <button class="st-trace-node is-active" data-section="caixa" type="button" aria-current="step"><span class="st-node-mark st-icon-card" aria-hidden="true" data-asset-slot="bank-node"></span><span><span class="st-node-index">01 / 04</span><span class="st-node-name">CaixaBank</span><span class="st-node-detail" data-en="Integration and product">Integración y producto</span></span></button>
+        <button class="st-trace-node" data-section="altia" type="button"><span class="st-node-mark st-icon-file" aria-hidden="true" data-asset-slot="file-node"></span><span><span class="st-node-index">02 / 04</span><span class="st-node-name">ALTIA</span><span class="st-node-detail" data-en="Migration and testing">Migración y pruebas</span></span></button>
+        <button class="st-trace-node" data-section="aia" type="button"><span class="st-node-mark st-icon-car" aria-hidden="true" data-asset-slot="vehicle-node"></span><span><span class="st-node-index">03 / 04</span><span class="st-node-name">AIA</span><span class="st-node-detail" data-en="SQL, data and maps">SQL, datos y cartografía</span></span></button>
+        <button class="st-trace-node" data-section="education" type="button"><span class="st-node-mark" aria-hidden="true"></span><span><span class="st-node-index">04 / 04</span><span class="st-node-name" data-en="Education">Formación</span><span class="st-node-detail" data-en="Education and skills">Estudios y tecnologías</span></span></button>
+      </nav>
+      <p class="st-path-note" data-en="Path and nodes: temporary visual assets">Camino y nodos: recursos visuales provisionales</p>
+    </aside>
+    <main class="st-section-content">
+      <section class="st-section-panel" data-panel="caixa">
+        <header class="st-section-head"><div><p class="st-overline" data-en="Most recent experience · 01">Experiencia más reciente · 01</p><h2>CaixaBank Tech</h2><p class="st-section-role" data-en="Software engineer · Integration and product">Ingeniero de software · Integración y producto</p></div><div class="st-date" data-en="Oct 2024 — present">Oct 2024 — actualidad</div></header>
+        <div class="st-aia-grid"><article class="st-story"><h3 data-en="My contribution">Mi contribución</h3><p data-en="React interfaces for instalment payments, card dashboards and operations, working as part of a team.">Interfaces React para fraccionamiento de pagos, dashboard de tarjetas y operativas, dentro de un equipo.</p><p data-en="API response transformation, dependent calls, incomplete data and recovery states. Close contact with requirements and coordination with consultancies.">Transformación de respuestas de APIs, llamadas dependientes, datos incompletos y estados de recuperación. Cercanía a requisitos y coordinación con consultoras.</p><div class="st-story-rule"><span data-en="Professional experience">Experiencia profesional</span><strong>React · APIs · Ionic SPA</strong></div><div class="st-story-rule"><span data-en="Personal recreation">Recreación personal</span><strong data-en="Local card query · Fictional data">Consulta local de tarjetas · Datos ficticios</strong></div><p class="st-disclaimer" data-en="This is not an internal interface and makes no real banking requests.">No es una interfaz interna ni realiza consultas bancarias reales.</p></article><div><div class="st-demo" id="st-bank"></div><details class="st-technical"><summary data-en="Technical detail · JSON and logs">Detalle técnico · JSON y registros</summary><p data-en="Local synthetic operations from this prototype. The technical contracts are still a proposal.">Operaciones sintéticas locales de este prototipo. Los contratos técnicos siguen siendo una propuesta.</p><pre id="st-bank-json"></pre></details></div></div>
+      </section>
+      <section class="st-section-panel" data-panel="altia" hidden>
+        <header class="st-section-head"><div><p class="st-overline" data-en="Previous experience · 02">Experiencia anterior · 02</p><h2>ALTIA</h2><p class="st-section-role" data-en="Software engineering intern · Migration and testing">Prácticas de ingeniería de software · Migración y pruebas</p></div><div class="st-date" data-en="Jul — Sep 2024">Jul — Sep 2024</div></header>
+        <div class="st-aia-grid"><article class="st-story"><h3 data-en="My contribution">Mi contribución</h3><p data-en="Support for migrating a UOC platform to Canvas: file download and export, work inside Canvas, and testing.">Apoyo a la migración de una plataforma de la UOC a Canvas: descarga y exportación de archivos, trabajo dentro de Canvas y pruebas.</p><p data-en="This personal recreation adds validation, metadata transformation and selective retries to explain a migration workflow.">Esta recreación personal añade validación, transformación de metadatos y reintento selectivo para explicar un flujo de migración.</p><div class="st-story-rule"><span data-en="Professional experience">Experiencia profesional</span><strong>Canvas · <span data-en="Export and testing">Exportación y pruebas</span></strong></div><div class="st-story-rule"><span data-en="Personal recreation">Recreación personal</span><strong data-en="Six resources · Destination mapping · Conflicts">Seis recursos · Asignación de destinos · Conflictos</strong></div><p class="st-disclaimer" data-en="No real files are uploaded and no connection to Canvas is made.">No se cargan archivos reales ni se conecta con Canvas.</p></article><div><div class="st-demo" id="st-migration"></div><details class="st-technical"><summary data-en="Technical detail · Validation and transformation">Detalle técnico · Validación y transformación</summary><pre id="st-migration-json"></pre></details></div></div>
+      </section>
+      <section class="st-section-panel" data-panel="aia" hidden>
+        <header class="st-section-head"><div><p class="st-overline" data-en="First experience · 03">Primera experiencia · 03</p><h2>AIA</h2><p class="st-section-role" data-en="Data scientist intern · SQL, preprocessing and maps">Prácticas de data scientist · SQL, preprocesamiento y cartografía</p></div><div class="st-date" data-en="Jul — Sep 2023">Jul — Sep 2023</div></header>
+        <div class="st-aia-grid"><article class="st-story"><h3 data-en="My contribution">Mi contribución</h3><p data-en="Complex SQL views, data preprocessing and research into downloadable mapping data for a truck routing project.">Vistas SQL complejas, preprocesamiento y búsqueda de cartografía descargable para un proyecto relacionado con rutas de camiones.</p><p data-en="I did not develop the original model. The algorithms and material rules in this demo are a new personal recreation.">No desarrollé el modelo original. Los algoritmos y las reglas de materiales de esta demo son una nueva recreación personal.</p><div class="st-story-rule"><span data-en="Professional experience">Experiencia profesional</span><strong>SQL · <span data-en="Data · Mapping">Datos · Cartografía</span></strong></div><div class="st-story-rule"><span data-en="Demo objective">Objetivo de la demo</span><strong data-en="Convert two batches of waste into reusable material, supply two factories and return to base with the shortest route.">Convertir dos lotes de restos en material reutilizable, abastecer dos fábricas y volver a la base con la menor distancia.</strong></div></article><div><div class="st-demo" id="st-routing"></div><details class="st-technical"><summary data-en="Technical detail · Methods and assumptions">Detalle técnico · Métodos y supuestos</summary><p data-en="One truck, two materials and four visits. Each processor exchanges one batch of waste for one reusable batch. Each factory receives one reusable batch. The exact method checks all valid visit orders; optimality is limited to this fictional network and these rules.">Un camión, dos materiales y cuatro visitas. Cada procesador cambia un lote de restos por uno reutilizable. Cada fábrica recibe uno reutilizable. El método exacto comprueba todos los órdenes válidos; la optimalidad se limita a esta red ficticia y estas reglas.</p><pre id="st-routing-json"></pre></details></div></div>
+      </section>
+      <section class="st-section-panel" data-panel="education" hidden><header class="st-section-head"><div><p class="st-overline" data-en="Education and skills · 04">Formación y tecnologías · 04</p><h2 data-en="The foundations.">La base.</h2></div><div class="st-date">2019–2024</div></header><div class="st-build"><article class="st-build-block"><span>UAB</span><h3 data-en="Computer Engineering">Ingeniería Informática</h3><p data-en="Computing specialization · Universitat Autònoma de Barcelona.">Mención en Computación · Universitat Autònoma de Barcelona.</p></article><article class="st-build-block"><span data-en="PROFESSIONAL EXPERIENCE">EXPERIENCIA PROFESIONAL</span><h3>React · APIs · SQL</h3><p data-en="React and API data integration at CaixaBank Tech; SQL and preprocessing at AIA. Export and testing in Canvas at ALTIA.">React e integración de datos de APIs en CaixaBank Tech; SQL y preprocesamiento en AIA. Exportación y pruebas en Canvas en ALTIA.</p></article><article class="st-build-block"><span data-en="PERSONAL / ONBOARDING PROJECT">PROYECTO PERSONAL / INCORPORACIÓN</span><h3>Spring Boot · PostgreSQL · React</h3><p data-en="An initial Bizum transaction simulator, separate from professional backend experience in production.">Simulador inicial de transacciones Bizum, separado de la experiencia profesional de backend en producción.</p></article><article class="st-build-block"><span data-en="PORTFOLIO TARGET STACK">STACK PREVISTO DEL PORTFOLIO</span><h3>React · TypeScript · Vite</h3><p data-en="The production stack is agreed. This visual prototype uses HTML, CSS and JavaScript.">El stack de producción está acordado. Este prototipo visual utiliza HTML, CSS y JavaScript.</p></article></div></section>
+      <div class="st-chapter-actions"><button class="st-button-secondary" type="button" data-action="previous" data-en="← Previous">← Anterior</button><button class="st-button-secondary" type="button" data-action="next" data-en="Next →">Siguiente →</button></div>
+    </main>
+  </section>
+  <main class="st-page-content" data-page-panel="build" hidden><header class="st-section-head"><div><p class="st-overline" data-en="Process and decisions">Proceso y decisiones</p><h2 data-en="How I built it">Cómo lo construí</h2><p class="st-section-role" data-en="What exists and what remains to be built">Lo que existe y lo que queda por construir</p></div></header><div class="st-build"><article class="st-build-block"><span data-en="PRODUCT">PRODUCTO</span><h3 data-en="A profile with optional depth">Un perfil con profundidad opcional</h3><p data-en="Four pages and three demos. Experience, education and contact remain accessible without completing any interaction.">Cuatro páginas y tres demos. Experiencia, formación y contacto accesibles sin completar ninguna interacción.</p></article><article class="st-build-block"><span data-en="CURRENT PROTOTYPE">PROTOTIPO ACTUAL</span><h3>HTML · CSS · JavaScript</h3><p data-en="Local interactions and fictional data for reviewing flows. This is not the final React implementation.">Interacciones locales y datos ficticios para revisar recorridos. No es la implementación final en React.</p></article><article class="st-build-block"><span data-en="AI AND REVIEW">IA Y REVISIÓN</span><h3 data-en="Assisted construction">Construcción asistida</h3><p data-en="The AI drafts documentation and this prototype. The author has reviewed the scope and the demo scenarios; visual review is ongoing.">La IA prepara documentación y este prototipo. El autor ha revisado el alcance y los escenarios; la revisión visual sigue abierta.</p></article><article class="st-build-block"><span data-en="NEXT DESIGN WORK">DISEÑO PENDIENTE</span><h3 data-en="A path that changes by chapter">Un camino que cambia por capítulo</h3><p data-en="Banking path and card node; file flow and document node; road and vehicle node. The author will define the images, colors and typography.">Camino bancario y nodo tarjeta; flujo de archivos y nodo documento; carretera y nodo vehículo. El autor definirá imágenes, colores y tipografías.</p></article></div><p class="st-pending" data-en="Public repository and selected documentation: links pending. No final quality validation is claimed by this prototype.">Repositorio público y documentación seleccionada: enlaces pendientes. Este prototipo no acredita la validación de calidad de la web final.</p></main>
+  <main class="st-page-content" data-page-panel="contact" hidden><header class="st-section-head"><div><p class="st-overline" data-en="Keep in touch">Seguimos en contacto</p><h2 data-en="Let's talk.">Hablemos.</h2><p class="st-section-role" data-en="Contact channels will be available without a form.">Los canales de contacto estarán disponibles mediante enlaces, sin formulario.</p></div></header><div class="st-contact-list"><div><strong>Email</strong><span data-en="Address pending">Dirección pendiente</span></div><div><strong>LinkedIn</strong><span data-en="Profile pending">Perfil pendiente</span></div><div><strong>GitHub</strong><span data-en="Profile and repository pending">Perfil y repositorio pendientes</span></div><div><strong>CV · PDF</strong><span data-en="Real CV pending">CV real pendiente</span></div></div></main>
+  <footer class="st-global-footer"><span data-en="Visual prototype · Personal recreations">Prototipo visual · Recreaciones personales</span><span data-en="Final images and typography pending">Imágenes y tipografías definitivas pendientes</span></footer>
+</div>
+
+<script>
+(() => {
+  const root = document.getElementById('system-trace-portfolio');
+  const $ = s => root.querySelector(s);
+  let lang = 'es', page = 'home', section = 'caixa';
+  const tr = (es,en) => lang === 'es' ? es : en;
+  const safe = v => String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const chapters = ['caixa','altia','aia','education'];
+  const money = n => new Intl.NumberFormat(lang==='es'?'es-ES':'en-GB',{style:'currency',currency:'EUR'}).format(n/100);
+  const delay = ms => new Promise(resolve=>setTimeout(resolve,ms));
+  const action = (name,label,disabled=false) => `<button type="button" class="st-button-secondary cursor-interaction" data-action="${name}" ${disabled?'disabled':''}>${label}</button>`;
+  const initialStrings = new Map();
+  root.querySelectorAll('[data-en]').forEach(el=>initialStrings.set(el,el.innerHTML));
+  function translate(){root.lang=lang;initialStrings.forEach((es,el)=>{el.innerHTML=lang==='es'?es:el.dataset.en;});root.querySelectorAll('[data-lang]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.lang===lang)));renderBank();renderMigration();renderRoute();}
+  function navigate(nextPage,nextSection){
+    page=nextPage;if(nextSection)section=nextSection;pauseRoute();
+    root.querySelectorAll('[data-page-panel]').forEach(el=>el.hidden=el.dataset.pagePanel!==page);
+    root.querySelectorAll('[data-panel]').forEach(el=>el.hidden=el.dataset.panel!==section);
+    root.querySelectorAll('.st-topbar [data-page]').forEach(el=>{if(el.dataset.page===page)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});
+    root.querySelectorAll('.st-trace-node').forEach(el=>{const active=el.dataset.section===section;el.classList.toggle('is-active',active);if(active)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');});
+    $('.st-navigator').dataset.theme=section;
+    $('[data-action="previous"]').disabled=chapters.indexOf(section)===0;
+    $('[data-action="next"]').disabled=chapters.indexOf(section)===chapters.length-1;
+  }
+
+  /* Local synthetic bank operations. */
+  const cards=[{id:'c1',label:['Tarjeta diaria','Everyday card'],last4:'1111',detailRef:'d1',limitMinor:150000,spentMinor:25000,movementsRef:'m1',items:[{id:'t1',description:['Compra de ejemplo','Sample purchase'],amountMinor:1200},{id:'t2',description:['Transporte','Transport'],amountMinor:350}]},{id:'c2',label:['Tarjeta viajes','Travel card'],last4:'2222',detailRef:'d2',limitMinor:200000,spentMinor:40000,movementsRef:'m2',items:[{id:'t3',description:['Alojamiento','Accommodation'],amountMinor:8000},{id:'t4',description:['Compra de ejemplo','Sample purchase'],amountMinor:2400}]}];
+  let bank={scenario:'normal',subtype:'partial',stage:'start',selected:null,busy:false,detail:null,items:null,error:null,attempts:{},logs:[],epoch:0};
+  function resetBank(scenario='normal',subtype='partial'){bank={scenario,subtype,stage:'start',selected:null,busy:false,detail:null,items:null,error:null,attempts:{},logs:[],epoch:bank.epoch+1};renderBank();}
+  function bankLog(operation,state,payload){bank.logs.push({operation,state,payload});}
+  async function bankQuery(){
+    if(bank.busy)return;const epoch=++bank.epoch;bank.busy=true;bank.error=null;bank.stage='loading';bankLog('getCards','start',{});renderBank();await delay(220);if(epoch!==bank.epoch)return;
+    bank.attempts.list=(bank.attempts.list||0)+1;
+    if(bank.scenario==='error'&&bank.subtype==='total'&&bank.attempts.list===1){bank.error='total';bank.stage='start';bankLog('getCards','error',{code:'CARDS_UNAVAILABLE'});}else{bank.stage='list';bankLog('getCards','success',{cards:cards.map(c=>({id:c.id,last4:c.last4,detailRef:c.detailRef}))});}
+    bank.busy=false;renderBank();
+  }
+  async function bankSelect(id){
+    if(bank.busy)return;const c=cards.find(c=>c.id===id);if(!c)return;const epoch=++bank.epoch;bank.selected=id;bank.detail=null;bank.items=null;bank.error=null;bank.busy=true;bank.stage='detail';bankLog('getCardDetail','start',{detailRef:c.detailRef});renderBank();await delay(220);if(epoch!==bank.epoch)return;
+    bank.detail={cardId:c.id,currency:'EUR',limitMinor:c.limitMinor,spentMinor:c.spentMinor,movementsRef:bank.scenario==='missing'?null:c.movementsRef};bankLog('getCardDetail','success',bank.detail);bank.busy=false;
+    if(bank.detail.movementsRef===null){renderBank();return;}await bankMovements();
+  }
+  async function bankMovements(){
+    if(bank.busy||!bank.detail?.movementsRef)return;const c=cards.find(c=>c.id===bank.selected),epoch=bank.epoch;bank.busy=true;bank.error=null;bankLog('getMovements','start',{movementsRef:c.movementsRef});renderBank();await delay(220);if(epoch!==bank.epoch)return;
+    bank.attempts[c.movementsRef]=(bank.attempts[c.movementsRef]||0)+1;
+    if(bank.scenario==='error'&&bank.subtype==='partial'&&bank.attempts[c.movementsRef]===1){bank.error='partial';bankLog('getMovements','error',{code:'MOVEMENTS_UNAVAILABLE'});}else{bank.items=c.items;bankLog('getMovements','success',{items:c.items.map(i=>({id:i.id,description:i.description[0],amountMinor:i.amountMinor}))});}
+    bank.busy=false;renderBank();
+  }
+  function renderBank(){
+    const labels={normal:tr('Todo funciona','All working'),missing:tr('Falta información','Missing information'),error:tr('Algo falla','Something fails')};
+    let screen='';
+    if(bank.stage==='start'){screen=`<h4>${tr('Tus tarjetas','Your cards')}</h4><p>${tr('Consulta dos tarjetas de ejemplo y explora sus movimientos.','Query two sample cards and explore their transactions.')}</p>${bank.error==='total'?`<div class="st-notice" role="alert">${tr('No se pudo obtener la lista. No se han solicitado datos dependientes.','The list could not be loaded. No dependent data was requested.')}</div>`:''}${action('bank-query',bank.error?tr('Reintentar consulta','Retry query'):tr('Consultar tarjetas','Query cards'))}`;}
+    else if(bank.stage==='loading'){screen=`<h4>${tr('Tus tarjetas','Your cards')}</h4><p role="status">${tr('Consultando…','Loading…')}</p>`;}
+    else if(bank.stage==='list'){screen=`<h4>${tr('Tus tarjetas','Your cards')}</h4>${cards.map(c=>`<button type="button" class="st-bank-card cursor-interaction" data-card="${c.id}">${tr(...c.label)} <span aria-hidden="true">↗</span><span>•••• ${c.last4}</span></button>`).join('')}`;}
+    else {const c=cards.find(c=>c.id===bank.selected);screen=`<button type="button" class="st-back cursor-interaction" data-action="bank-back">${tr('← Volver a tarjetas','← Back to cards')}</button><h4>${tr(...c.label)}</h4>`;
+      if(!bank.detail){screen+=`<p role="status">${tr('Cargando detalle…','Loading details…')}</p>`;}
+      else {screen+=`<p>${tr('Disponible','Available')}</p><div class="st-balance">${money(bank.detail.limitMinor-bank.detail.spentMinor)}</div>`;
+        if(bank.detail.movementsRef===null)screen+=`<div class="st-notice">${tr('Información de movimientos no disponible. La tarjeta sigue siendo consultable.','Transaction information is unavailable. The card details remain available.')}</div>`;
+        else if(bank.busy)screen+=`<p role="status">${tr('Cargando movimientos…','Loading transactions…')}</p>`;
+        else if(bank.error==='partial')screen+=`<div class="st-notice" role="alert">${tr('No se pudieron cargar los movimientos. Conservamos el detalle.','Transactions could not be loaded. Card details are preserved.')}</div>${action('bank-retry',tr('Reintentar movimientos','Retry transactions'))}`;
+        else screen+=(bank.items||[]).map(i=>`<div class="st-move"><span>${tr(...i.description)}</span><span>−${money(i.amountMinor)}</span></div>`).join('');
+      }
+    }
+    $('#st-bank').innerHTML=`<div class="st-demo-heading"><h3>${tr('Una consulta, distintos escenarios','One query, different scenarios')}</h3><p>${tr('Simulación local · contratos propuestos','Local simulation · proposed contracts')}</p></div><div class="st-control-row">${Object.keys(labels).map(k=>`<button type="button" data-scenario="${k}" aria-pressed="${bank.scenario===k}">${labels[k]}</button>`).join('')}</div>${bank.scenario==='error'?`<div class="st-control-row"><label>${tr('Tipo de fallo','Failure type')} <select id="st-error-type"><option value="partial" ${bank.subtype==='partial'?'selected':''}>${tr('Parcial','Partial')}</option><option value="total" ${bank.subtype==='total'?'selected':''}>${tr('Total','Total')}</option></select></label></div>`:''}<div class="st-phone"><div class="st-phone-bar" aria-hidden="true"></div><div aria-live="polite">${screen}</div></div><div class="st-demo-footer"><span class="st-result">${tr('Datos ficticios · sin operaciones reales','Fictional data · no real operations')}</span>${action('bank-reset',tr('Reiniciar','Reset'))}</div>`;
+    $('#st-bank-json').textContent=JSON.stringify({scenario:bank.scenario,...(bank.scenario==='error'?{failure:bank.subtype}:{}),detail:bank.detail,...(bank.detail?{availableMinor:bank.detail.limitMinor-bank.detail.spentMinor}:{}),logs:bank.logs},null,2);
+  }
+
+  /* Synthetic migration: mapping, conflicts and selective retry. */
+  const migrationSource=[{id:'r1',module:'intro',name:'guia.pdf'},{id:'r2',module:'intro',name:'agenda.pdf'},{id:'r3',module:'intro',name:'recursos.zip'},{id:'r4',module:'practice',name:'guia.pdf'},{id:'r5',module:'practice',name:'ejercicio.pdf'},{id:'r6',module:'practice',name:'datos.csv'}];
+  let migration={mapping:{intro:'general',practice:''},names:{},states:{},output:[],started:false,busy:false,epoch:0};
+  function validation(f){const dest=migration.mapping[f.module],name=(migration.names[f.id]??f.name).trim();if(!dest)return 'destination';if(!name)return 'name';if(migration.output.some(o=>o.sourceId!==f.id&&o.folder===dest&&o.filename.toLowerCase()===name.toLowerCase()))return 'collision';return null;}
+  function revalidate(){migrationSource.forEach(f=>{if(migration.states[f.id]?.status==='done')return;if(migration.started){const reason=validation(f);migration.states[f.id]={status:reason?'review':'pending',reason};}});}
+  async function migrate(){
+    if(migration.busy)return;migration.started=true;migration.busy=true;const epoch=++migration.epoch;
+    for(const f of migrationSource){if(migration.states[f.id]?.status==='done')continue;const reason=validation(f);if(reason){migration.states[f.id]={status:'review',reason};renderMigration();continue;}
+      migration.states[f.id]={status:'processing',reason:null};renderMigration();await delay(180);if(epoch!==migration.epoch)return;
+      migration.output.push({sourceId:f.id,folder:migration.mapping[f.module],filename:(migration.names[f.id]??f.name).trim()});migration.states[f.id]={status:'done',reason:null};renderMigration();
+    }
+    migration.busy=false;renderMigration();
+  }
+  function renderMigration(){
+    const statuses={pending:tr('Pendiente','Pending'),processing:tr('En proceso','Processing'),done:tr('Completado','Completed'),review:tr('Requiere revisión','Needs review')};
+    const reasons={destination:tr('Asigna un destino al módulo Prácticas.','Assign a destination to the Practice module.'),collision:tr('Este nombre ya existe en el destino. Renombra el recurso.','This name already exists in the destination. Rename the resource.'),name:tr('El nombre no puede estar vacío.','The name cannot be empty.')};
+    const rows=migrationSource.map(f=>{const st=migration.states[f.id]||{status:'pending'},mod=f.module==='intro'?tr('Introducción','Introduction'):tr('Prácticas','Practice');return `<div class="st-file-row" data-status="${st.status}"><strong>${safe(migration.names[f.id]??f.name)}</strong><span class="st-file-status">${statuses[st.status]}</span><small>${mod}${st.reason?' · '+reasons[st.reason]:''}</small></div>`;}).join('');
+    const collisions=migrationSource.filter(f=>['collision','name'].includes(migration.states[f.id]?.reason));
+    $('#st-migration').innerHTML=`<div class="st-demo-heading"><h3>${tr('Un curso, seis recursos','One course, six resources')}</h3><p>${tr('Asignar destino → validar → transferir','Map destination → validate → transfer')}</p></div><div class="st-control-row"><strong role="status">${migration.output.length} / 6 ${tr('completados','completed')}</strong></div><div class="st-migration-list">${rows}</div>${migration.started?`<div class="st-corrections"><label><span>${tr('Destino del módulo Prácticas','Practice module destination')}</span><select id="st-folder" ${migration.busy?'disabled':''}><option value="" ${!migration.mapping.practice?'selected':''}>${tr('Sin asignar','Unassigned')}</option><option value="general" ${migration.mapping.practice==='general'?'selected':''}>General</option><option value="practice" ${migration.mapping.practice==='practice'?'selected':''}>${tr('Prácticas','Practice')}</option></select></label>${collisions.map(f=>`<label><span>${tr('Nuevo nombre para','New name for')} ${safe(f.name)}</span><input data-rename="${f.id}" value="${safe(migration.names[f.id]??f.name)}" ${migration.busy?'disabled':''}></label>`).join('')}<p class="st-result">${tr('General ya recibe los archivos de Introducción. Una asignación puede descubrir nombres repetidos.','General already receives the Introduction files. Mapping a module may reveal duplicate names.')}</p></div>`:''}<div class="st-demo-footer">${action('migration-run',migration.started?tr('Reintentar pendientes','Retry pending'):tr('Iniciar migración','Start migration'),migration.busy||migration.output.length===6)}${action('migration-reset',tr('Reiniciar','Reset'))}</div>`;
+    $('#st-migration-json').textContent=JSON.stringify({input:migrationSource,mapping:migration.mapping,validation:migration.states,output:migration.output},null,2);
+  }
+
+  /* MODEL_START: fixed fictional road network and feasible visit orders. */
+  const points=[[42,146],[128,50],[290,51],[356,179],[181,236]];
+  const roads=[[0,1],[1,2],[2,3],[3,4],[4,0],[1,4],[2,4]];
+  function shortest(a,b){const dist=Array(5).fill(Infinity),prev=Array(5).fill(-1),seen=new Set();dist[a]=0;while(seen.size<5){let u=-1;for(let i=0;i<5;i++)if(!seen.has(i)&&(u<0||dist[i]<dist[u]))u=i;if(u===b)break;seen.add(u);for(const [x,y]of roads){const v=x===u?y:y===u?x:-1;if(v<0)continue;const w=Math.round(Math.hypot(points[u][0]-points[v][0],points[u][1]-points[v][1])/10);if(dist[u]+w<dist[v]){dist[v]=dist[u]+w;prev[v]=u;}}}const path=[b];while(path[0]!==a){const p=prev[path[0]];if(p<0)throw Error('Disconnected road network');path.unshift(p);}return {distance:dist[b],path};}
+  function feasible(order){let raw=2,reuse=0;for(const i of order){if(i<2){if(!raw)return false;raw--;reuse++;}else{if(!reuse)return false;reuse--;}if(raw+reuse>2)return false;}return raw===0&&reuse===0;}
+  function permutations(a){if(!a.length)return [[]];return a.flatMap((v,i)=>permutations(a.filter((_,j)=>j!==i)).map(t=>[v,...t]));}
+  function routeCost(order,locations){let node=0,cost=0;for(const i of order){cost+=shortest(node,locations[i]).distance;node=locations[i];}return cost+shortest(node,0).distance;}
+  function solveRoute(method,locations){if(new Set(locations).size!==4)return null;const all=permutations([0,1,2,3]).filter(feasible);let order;if(method==='exact'){order=all.reduce((best,o)=>routeCost(o,locations)<routeCost(best,locations)?o:best,all[0]);}else{order=[];let raw=2,reuse=0,node=0;while(order.length<4){const next=[0,1,2,3].filter(i=>!order.includes(i)&&(i<2?raw>0:reuse>0)).sort((a,b)=>shortest(node,locations[a]).distance-shortest(node,locations[b]).distance||a-b)[0];order.push(next);if(next<2){raw--;reuse++;}else reuse--;node=locations[next];}}return {order,distance:routeCost(order,locations),validOrders:all.length};}
+  /* MODEL_END */
+  let route={locations:[1,4,2,3],method:'nearest',result:null,frames:[],step:0,playing:false,timer:null,error:false};
+  function pauseRoute(){if(typeof route==='undefined')return;clearInterval(route.timer);route.timer=null;route.playing=false;const b=$('[data-action="route-play"]');if(b)b.textContent=tr('Reproducir','Play');}
+  function invalidateRoute(){pauseRoute();route.result=null;route.frames=[];route.step=0;route.error=false;renderRoute();}
+  function calculateRoute(){pauseRoute();route.result=solveRoute(route.method,route.locations);route.error=!route.result;route.step=0;route.frames=[];if(route.result){let node=0,raw=2,reuse=0,delivered=0;route.frames.push({node,raw,reuse,delivered,event:'start'});for(const i of route.result.order){const path=shortest(node,route.locations[i]).path;path.slice(1).forEach((n,j)=>{const last=j===path.length-2;if(last){if(i<2){raw--;reuse++;}else{reuse--;delivered++;}}route.frames.push({node:n,raw,reuse,delivered,event:last?['P1','P2','F1','F2'][i]:'transit'});});node=route.locations[i];}const back=shortest(node,0).path;back.slice(1).forEach((n,j)=>route.frames.push({node:n,raw,reuse,delivered,event:j===back.length-2?'end':'transit'}));}renderRoute();}
+  function playRoute(){if(!route.result)return;if(route.playing){pauseRoute();renderRoute();return;}if(matchMedia('(prefers-reduced-motion: reduce)').matches){route.step=route.frames.length-1;renderRoute();return;}if(route.step===route.frames.length-1)route.step=0;route.playing=true;route.timer=setInterval(()=>{route.step++;if(route.step>=route.frames.length-1){route.step=route.frames.length-1;pauseRoute();}renderRoute();},750);renderRoute();}
+  function renderRoute(){
+    const labels=['P1','P2','F1','F2'],locLabels=['A','B','C','D'];
+    const edges=roads.map(([a,b])=>`<line x1="${points[a][0]}" y1="${points[a][1]}" x2="${points[b][0]}" y2="${points[b][1]}" stroke="var(--st-line)" stroke-width="7"/>`).join('');
+    const completePath=route.frames.map(f=>points[f.node].join(',')).join(' ');
+    const nodes=points.map(([x,y],i)=>{const items=i===0?[tr('Base','Base')]:labels.filter((_,j)=>route.locations[j]===i);return `<circle cx="${x}" cy="${y}" r="19" fill="var(--st-panel)" stroke="var(--st-ink)" stroke-width="2"/><text x="${x}" y="${y+6}" text-anchor="middle">${i===0?'B':locLabels[i-1]}</text><text x="${x}" y="${y+(i<3?-29:38)}" text-anchor="middle">${items.join('/')||'—'}</text>`;}).join('');
+    const f=route.frames[route.step]||{node:0,raw:2,reuse:0,delivered:0,event:'start'},[vx,vy]=points[f.node];
+    const svg=`<svg class="st-network" viewBox="0 0 400 290" role="img" aria-label="${tr('Red ficticia con base, dos procesadores y dos fábricas. El marcador T representa el camión.','Fictional network with a base, two processors and two factories. T marks the truck.')}">${edges}${route.result?`<polyline points="${completePath}" fill="none" stroke="var(--st-signal)" stroke-width="3" stroke-linejoin="round"/>`:''}${nodes}<g><circle cx="${vx+13}" cy="${vy-14}" r="13" fill="var(--st-signal)"/><text x="${vx+13}" y="${vy-8}" text-anchor="middle" style="fill:var(--st-panel);font-size:16px">T</text></g></svg>`;
+    const event=f.event==='start'?tr('Salida de la base','Departure from base'):f.event==='end'?tr('Regreso a la base · entregas completas','Back at base · deliveries completed'):f.event==='transit'?tr('Paso por un punto sin intercambio','Passing a point without an exchange'):f.event.startsWith('P')?tr(f.event+': descarga restos y recoge material',f.event+': unload waste and collect material'):tr(f.event+': entrega material reutilizable',f.event+': deliver reusable material');
+    const methodOptions=`<option value="nearest" ${route.method==='nearest'?'selected':''}>${tr('Siguiente válida más cercana','Nearest valid next stop')}</option><option value="exact" ${route.method==='exact'?'selected':''}>${tr('Todos los órdenes válidos','All valid visit orders')}</option>`;
+    $('#st-routing').innerHTML=`<div class="st-demo-heading"><h3>${tr('Recoger, transformar, entregar','Collect, transform, deliver')}</h3><p>${tr('1 camión · 2 materiales · P: procesadores · F: fábricas','1 truck · 2 materials · P: processors · F: factories')}</p></div><div class="st-control-row"><label>${tr('Método','Method')} <select id="st-route-method">${methodOptions}</select></label></div><div class="st-location-grid">${labels.map((label,i)=>`<label>${label} · ${tr('Ubicación','Location')}<select data-location="${i}">${locLabels.map((loc,j)=>`<option value="${j+1}" ${route.locations[i]===j+1?'selected':''}>${loc}</option>`).join('')}</select></label>`).join('')}</div>${svg}<div class="st-route-summary" aria-live="polite">${route.error?`<span role="alert">${tr('Cada punto necesita una ubicación distinta.','Each point needs a different location.')}</span>`:route.result?`<strong>${route.result.distance} ${tr('unidades de distancia','distance units')}</strong><br>${['Base',...route.result.order.map(i=>labels[i]),'Base'].join(' → ')}`:tr('Selecciona ubicaciones distintas y calcula un recorrido.','Select distinct locations and calculate a route.')}</div><div class="st-demo-actions st-control-row">${action('route-calculate',tr('Calcular','Calculate'))}${action('route-play',route.playing?tr('Pausar','Pause'):tr('Reproducir','Play'),!route.result)}${action('route-step',tr('Avanzar un paso','Step forward'),!route.result||route.playing||route.step===route.frames.length-1)}${action('route-reset',tr('Reiniciar','Reset'))}</div><div class="st-route-state" aria-live="polite"><strong>${event}</strong><p>${tr('Carga','Load')}: ${f.raw} ${tr('restos','waste')} + ${f.reuse} ${tr('reutilizable','reusable')} · ${tr('Capacidad','Capacity')} 2</p><p>${tr('Entregas','Deliveries')}: ${f.delivered} / 2</p></div>`;
+    $('#st-routing-json').textContent=JSON.stringify({method:route.method,locations:Object.fromEntries(labels.map((l,i)=>[l,locLabels[route.locations[i]-1]])),distanceUnit:tr('Ficticia; no son km reales','Fictional; not real km'),result:route.result,currentState:f},null,2);
+  }
+
+  root.addEventListener('click',event=>{
+    const b=event.target.closest('button');if(!b||!root.contains(b)||b.disabled)return;
+    if(b.dataset.viewport){root.classList.toggle('is-mobile',b.dataset.viewport==='mobile');root.querySelectorAll('[data-viewport]').forEach(el=>el.setAttribute('aria-pressed',String(el===b)));}
+    if(b.dataset.lang){lang=b.dataset.lang;translate();}
+    if(b.dataset.page)navigate(b.dataset.page);
+    if(b.dataset.section)navigate('profile',b.dataset.section);
+    if(b.dataset.scenario)resetBank(b.dataset.scenario,bank.subtype);
+    if(b.dataset.card)bankSelect(b.dataset.card);
+    switch(b.dataset.action){
+      case 'previous':navigate('profile',chapters[Math.max(0,chapters.indexOf(section)-1)]);break;
+      case 'next':navigate('profile',chapters[Math.min(chapters.length-1,chapters.indexOf(section)+1)]);break;
+      case 'bank-query':bankQuery();break;
+      case 'bank-retry':bankMovements();break;
+      case 'bank-reset':resetBank();break;
+      case 'bank-back':bank.epoch++;bank.busy=false;bank.selected=null;bank.detail=null;bank.items=null;bank.error=null;bank.stage='list';renderBank();break;
+      case 'migration-run':migrate();break;
+      case 'migration-reset':migration={mapping:{intro:'general',practice:''},names:{},states:{},output:[],started:false,busy:false,epoch:migration.epoch+1};renderMigration();break;
+      case 'route-calculate':calculateRoute();break;
+      case 'route-play':playRoute();break;
+      case 'route-step':if(route.result){route.step=Math.min(route.step+1,route.frames.length-1);renderRoute();}break;
+      case 'route-reset':pauseRoute();route.locations=[1,4,2,3];route.method='nearest';invalidateRoute();break;
+    }
+  });
+  root.addEventListener('change',event=>{
+    const el=event.target;
+    if(el.id==='st-error-type')resetBank('error',el.value);
+    if(el.id==='st-folder'){migration.mapping.practice=el.value;revalidate();renderMigration();}
+    if(el.dataset.rename){migration.names[el.dataset.rename]=el.value;revalidate();renderMigration();}
+    if(el.id==='st-route-method'){route.method=el.value;invalidateRoute();}
+    if(el.dataset.location!==undefined){route.locations[Number(el.dataset.location)]=Number(el.value);invalidateRoute();}
+  });
+  root.addEventListener('input',event=>{const el=event.target;if(el.dataset.rename)migration.names[el.dataset.rename]=el.value;});
+  root.querySelectorAll('button,summary').forEach(el=>el.classList.add('cursor-interaction'));
+  renderBank();renderMigration();renderRoute();navigate('home');
+})();
+
+</script>
+</div>
+
+</body></html>

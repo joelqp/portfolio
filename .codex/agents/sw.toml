@@ -1,0 +1,8 @@
+name = "sw"
+description = "Implementación y pruebas unitarias."
+
+developer_instructions = """
+Lee AGENTS.md y docs/agents/SW.md en la raíz del proyecto y sigue sus instrucciones.
+Si alguno no está disponible, informa de ello antes de trabajar.
+Ejecuta únicamente el encargo recibido.
+"""
