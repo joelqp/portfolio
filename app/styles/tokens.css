@@ -1,0 +1,50 @@
+:root {
+  color-scheme: light;
+
+  /* Sacramento es la base; el resto de la paleta se deriva de este verde. */
+  --color-brand: #043927;
+  --color-brand-hover: #07523b;
+  --color-brand-shadow: #01251b;
+  --color-on-brand: #ffffff;
+  --color-canvas: #f2f7f4;
+  --color-surface: #ffffff;
+  --color-surface-soft: #e4efe8;
+  --color-accent-soft: #c6e2d1;
+  --color-text: #163b2b;
+  --color-text-muted: #4f695b;
+  --color-border: #9ebbad;
+  --color-surface-shadow: #b7cfc0;
+  --color-focus: #147354;
+  --color-focus-on-dark: #c6e2d1;
+
+  --font-family-body: system-ui, sans-serif;
+  --font-size-small: 0.875rem;
+  --font-size-body: 1rem;
+  --font-weight-medium: 600;
+  --font-weight-bold: 750;
+  --line-height-body: 1.6;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius-control: 0.625rem;
+  --radius-card: 1rem;
+  --radius-pill: 999px;
+  --control-height: 3rem;
+  --content-width: 75rem;
+  --relief-depth: 0.25rem;
+  --shadow-brand: 0 var(--relief-depth) 0 var(--color-brand-shadow);
+  --shadow-surface: 0 var(--relief-depth) 0 var(--color-surface-shadow);
+  --duration-interaction: 150ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-interaction: 0ms;
+  }
+}

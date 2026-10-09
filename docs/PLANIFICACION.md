@@ -1,6 +1,6 @@
 # Planificación del portfolio
 
-Versión 0.2 · 8 de octubre de 2026
+Versión 0.4 · 9 de octubre de 2026
 
 Este documento organiza la construcción del producto definido en [PROYECTO.md](PROYECTO.md). El detalle funcional y técnico se mantiene en [ESPECIFICACION.md](ESPECIFICACION.md). Las entregas no modifican por sí mismas el alcance final ni convierten propuestas técnicas en decisiones aprobadas.
 
@@ -8,7 +8,7 @@ Este documento organiza la construcción del producto definido en [PROYECTO.md](
 
 Cada sprint termina con una versión ejecutable y revisable. La configuración, los componentes y las pruebas se integran en el entregable al que sirven; no hay un sprint de fundación independiente.
 
-La definición se completa por sprint: antes de cada entrega se concretan únicamente los comportamientos, datos, errores, aceptación y decisiones que condicionen ese trabajo. No se exige cerrar toda la especificación antes de empezar a programar. Las propuestas de entregas posteriores permanecen pendientes sin bloquear las anteriores. La estructura parte del prototipo elegido y usa recursos provisionales; los colores, tipografías e imágenes definitivos se incorporarán después.
+La definición se completa por sprint: antes de cada entrega se concretan únicamente los comportamientos, datos, errores, aceptación y decisiones que condicionen ese trabajo. No se exige cerrar toda la especificación antes de empezar a programar. Las propuestas de entregas posteriores permanecen pendientes sin bloquear las anteriores. La estructura parte del prototipo elegido y usa recursos provisionales. La base visual adoptada es relieve con verde Sacramento y tonos derivados, descrita en ESPECIFICACION.md; las tipografías, imágenes y detalles restantes se concretan después.
 
 Los escenarios simplificados de AIA y ALTIA están aprobados. La estimación se ajustará por entrega y con el primer incremento ejecutable, sin bloquear el arranque por detalles de demos futuras. El tablero mantiene tareas, responsables cuando proceda y progreso; este documento describe las entregas.
 
@@ -37,7 +37,7 @@ Orden aceptado: estructura → CaixaBank → ALTIA → AIA → publicación. Las
 ## Sprint 1: encargo de implementación
 
 1. Leer AGENTS.md, PROYECTO.md, esta planificación y la base aprobada de ESPECIFICACION.md. Inspeccionar el repositorio, sus instrucciones, configuración y cambios existentes antes de editar. Configurar o adaptar la base aprobada conservando el trabajo previo.
-2. Implementar Inicio, Perfil profesional, Cómo lo construí y Contacto, con navegación y textos iniciales en ES/EN. Usar el prototipo `portfolio-prototipo-base.html` como referencia estructural. Incorporar solo datos profesionales disponibles; marcar el contenido pendiente.
+2. Implementar Inicio, Perfil profesional, Cómo lo construí y Contacto, con navegación y textos iniciales en ES/EN. Usar el prototipo `portfolio-prototipo-base.html` únicamente como referencia estructural e ignorar sus estilos; el diseño visual se decide por separado con el autor, también para pruebas y experimentos. Incorporar solo datos profesionales disponibles; marcar el contenido pendiente.
 3. Construir el recorrido CaixaBank → ALTIA → AIA → formación. Preparar caminos y nodos sustituibles por experiencia: banca/tarjeta, archivos/documento y carretera/vehículo. Usar marcadores gráficos provisionales y adaptar el recorrido a escritorio y móvil según la referencia.
 4. Incluir espacios identificados para las tres demos, el CV y los contactos pendientes. No implementar todavía los flujos de las demos ni añadir backend, servicios externos o publicación.
 5. Comprobar navegación entre páginas, cambio de idioma, enlaces directos, recarga, historial y teclado. Compilar y comprobar que el HTML generado contiene el contenido informativo. Revisar la interfaz renderizada en móvil y escritorio cuando el entorno lo permita; identificar expresamente lo no verificado.
@@ -62,3 +62,5 @@ Las tareas y resultados de verificación se mantienen en el tablero o en las rev
 
 - **08/10/2026 · v0.1:** eliminación de disponibilidad, dedicación y objetivos temporales personales; referencias laborales sustituidas por descripciones funcionales de las demos.
 - **08/10/2026 · v0.2:** restauradas las referencias a CaixaBank, ALTIA y AIA en las demos, los sprints y el recorrido, por indicación expresa de mostrar las empresas en la web.
+- **09/10/2026 · v0.3:** explicitado el uso exclusivamente estructural del prototipo, excluyendo sus estilos como referencia visual.
+- **09/10/2026 · v0.4:** alineada la planificación con la base visual de relieve y verde Sacramento adoptada en ESPECIFICACION.md.

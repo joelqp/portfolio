@@ -1,6 +1,6 @@
 # Reglas comunes para los agentes
 
-Versión 0.2 · 4 de octubre de 2026
+Versión 0.5 · 9 de octubre de 2026
 
 ## 1. Forma de trabajo y control
 
@@ -8,6 +8,7 @@ El usuario invoca a los agentes para tareas concretas y conserva el control de l
 
 - Trabaja solo en la tarea indicada y dentro de sus límites. Una revisión o una consulta no autoriza a modificar archivos ni implementar sus recomendaciones.
 - Antes de una modificación, explica brevemente qué vas a cambiar. Si la tarea ya está clara y autorizada, ejecútala sin pedir otra confirmación de lo mismo.
+- Antes de ejecutar cualquier comando extenso o complejo, explica brevemente al usuario qué hace y para qué lo necesitas, especialemente los detalles.
 - No avances a la siguiente tarea, amplíes el alcance, reorganices el proyecto, instales dependencias o refactorices por iniciativa propia. Hazlo únicamente si forma parte del encargo o existe autorización explícita vigente.
 - No ejecutes agentes de forma continua ni lances otros agentes/delegaciones sin encargo explícito.
 
@@ -32,6 +33,7 @@ Mientras esperas, puedes continuar el análisis de lectura dentro del encargo. N
 - Lee las instrucciones específicas del rol cuando se solicite ese rol. Las reglas comunes viven aquí; los archivos de rol contienen solo responsabilidades específicas.
 - Consulta código, configuración y README para conocer implementación, versiones y comandos reales. No inventes repositorios accesibles, herramientas instaladas, archivos o pruebas ejecutadas.
 - Usa la referencia visual identificada y aprobada. Si falta y afecta al resultado, consulta; no sustituyas el diseño con una elección estética propia.
+- El prototipo `docs/design/portfolio-prototipo-base.html` sirve únicamente como referencia estructural. Cada vez que se consulte o utilice, ignora sus estilos: no copies ni tomes como guía sus colores, tipografías, bordes, radios, sombras, espaciados o efectos. El diseño visual se decide por separado con el usuario; esta regla también se aplica a pruebas y experimentos.
 - Ante contradicciones entre tarea, especificación, diseño y código, señala las fuentes. No elijas la versión más conveniente ni cambies requisitos para justificar la implementación.
 - Mantén biografía, preferencias y contexto conversacional fuera de PROYECTO.md. La especificación puede definir la estructura de los datos de contenido, pero no debe duplicar el perfil personal.
 - Si una instrucción nueva autoriza un cambio de comportamiento, actualiza su definición técnica y registra la decisión. Conserva IDs y la sección 14; no elimines entradas anteriores ni cambies propuestas a definidas sin decisión expresa.
@@ -46,6 +48,8 @@ Mientras esperas, puedes continuar el análisis de lectura dentro del encargo. N
 
 ## 5. Cambios y validación
 
+- La legibilidad y la mantenibilidad son la prioridad al escribir código. Usa nombres explícitos, formato claro y componentes pequeños con responsabilidades concretas. Separa presentación, datos y comportamiento cuando la tarea lo requiera; evita JSX comprimido, duplicación y abstracciones sin una necesidad real.
+- Usa el layout y los componentes compartidos existentes. Centraliza los valores de diseño en `app/styles/tokens.css` y los estilos propios en CSS Modules; no copies el navbar ni sus estilos en cada página.
 - Conserva el trabajo existente. No reviertas cambios ajenos ni edites archivos fuera del alcance solicitado.
 - Implementa los criterios adoptados, con pruebas proporcionadas a los riesgos del cambio. No añadas pruebas de relleno ni modifiques aceptación para conseguir resultados favorables.
 - Ejecuta los controles exigibles realmente disponibles y distingue resultados: pasado, fallido o no ejecutado. Una comprobación que falta configurar sigue pendiente.
@@ -71,3 +75,6 @@ Este archivo establece reglas comunes; no crea ni activa agentes por sí solo. E
 
 - **04/10/2026 · v0.1:** borrador de instrucciones comunes, fuentes, implementación, validación y roles.
 - **04/10/2026 · v0.2:** trabajo por encargo, límites explícitos, consulta previa ante subjetividad/alternativas no resueltas, objetividad, conservación del registro y verificación de versiones entregadas.
+- **09/10/2026 · v0.3:** obligación de explicar qué hace y para qué se necesita cada comando extenso o complejo antes de ejecutarlo.
+- **09/10/2026 · v0.4:** prototipo limitado a referencia estructural; sus estilos quedan excluidos como guía visual, también en pruebas y experimentos.
+- **09/10/2026 · v0.5:** prioridad de código legible y mantenible; reutilización del layout y componentes, con valores de diseño centralizados.

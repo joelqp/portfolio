@@ -1,6 +1,6 @@
 # Portfolio profesional interactivo
 
-Versión 0.2 · 8 de octubre de 2026
+Versión 0.4 · 9 de octubre de 2026
 
 ## Propósito
 
@@ -59,9 +59,9 @@ El escenario acordado migra seis recursos ficticios. Un módulo sin destino afec
 
 Una interfaz ficticia en un marco de móvil permite explorar «Todo funciona», «Falta información» y «Algo falla». Los escenarios son reproducibles; los fallos parciales conservan las acciones válidas y los fallos totales ofrecen recuperación o salida.
 
-El detalle técnico opcional muestra respuestas JSON y registros coherentes con la ejecución, y explica las dependencias y transformaciones de datos. Las operaciones están identificadas como simuladas.
+El detalle técnico opcional explica las dependencias y transformaciones de datos. No incluye un visor de JSON. Las operaciones están identificadas como simuladas.
 
-El flujo acordado es listado de tarjetas → detalle → movimientos, con los escenarios de información ausente, fallo parcial y fallo total. Los contratos y reglas concretos permanecen como propuesta técnica para revisión.
+El flujo acordado es listado de tarjetas → detalle → movimientos, con los escenarios de información ausente, fallo parcial y fallo total. En los escenarios de fallo, el intento inicial y tres reintentos automáticos fallan; después se muestra el error y el reintento manual funciona. El resto de contratos y reglas concretos permanece como propuesta técnica para revisión.
 
 ## Calidad esperada
 
@@ -85,3 +85,7 @@ Los escenarios de las tres demos están acordados. Antes de implementar deben co
 
 - **08/10/2026 · v0.1:** eliminación de información y preferencias personales; nombres de demos sustituidos por descripciones funcionales.
 - **08/10/2026 · v0.2:** restaurados los nombres de AIA, ALTIA y CaixaBank Tech y su asociación con las demos y el recorrido, por indicación expresa de mostrarlos en la web.
+
+- **09/10/2026 · v0.3:** descartado el visor de JSON del caso CaixaBank; se conserva la explicación técnica opcional.
+
+- **09/10/2026 · v0.4:** acordado que los fallos de CaixaBank agotan tres reintentos automáticos y se recuperan mediante reintento manual.

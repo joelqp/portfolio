@@ -1,5 +1,7 @@
 # Especificación funcional y técnica
 
+Versión 0.5 · 9 de octubre de 2026
+
 Este documento desarrolla el comportamiento y la implementación del alcance de [PROYECTO.md](PROYECTO.md). No describe trabajo terminado ni contiene planificación de entregas.
 
 **Definido** identifica requisitos o decisiones ya establecidos. **Propuesta** identifica alternativas disponibles que deben adoptarse o ajustarse antes de implementarlas. **Pendiente** identifica cuestiones sin resolver. La reorganización documental no aprueba propuestas anteriores.
@@ -8,13 +10,22 @@ Este documento desarrolla el comportamiento y la implementación del alcance de 
 
 **Base de arranque aprobada:** React + TypeScript estricto + Vite, React Router con HTML generado al compilar y CSS Modules. Permite implementar la estructura de las cuatro páginas en ES/EN, su navegación, la adaptación móvil/escritorio y los espacios para las demos, siguiendo el prototipo elegido. Aprobado no significa implementado.
 
+**Componentes aprobados:** Base UI (`@base-ui/react`) para controles interactivos que requieran comportamiento compuesto. Sus componentes sin estilo se personalizan con CSS Modules y variables CSS. La elección no fija colores, tipografías ni composición visual, y no sustituye los controles nativos cuando cubran la necesidad.
+
+**Estilo aprobado:** relieve mediante bordes definidos y sombras inferiores, con verde Sacramento (`#043927`) como base oscura y tonos verdes derivados para fondos y estados. Esta elección procede de la muestra «Relieve» del experimento de botones, no del prototipo estructural. Se aplica a la navegación y los componentes básicos compartidos; el detalle visual restante se revisa al incorporar contenido.
+
+**Base compartida aprobada:** un único `SiteLayout` envuelve las páginas desde `app/root.tsx`, con `Header` y navegación a Inicio, Perfil profesional, Cómo lo construí y Contacto. El contenido de las cuatro rutas actuales queda vacío al retirar los experimentos. Esto no completa la estructura ni las rutas ES/EN del Sprint 1. La navegación marca la página activa y, al cambiar de ruta con JavaScript, sitúa el foco en el contenido principal mientras no existan encabezados de página.
+
+Los componentes básicos son `Button`, `Card`, `Badge`, `TextField`, `Checkbox` y `Switch`, cada uno con responsabilidades y CSS propios. Las variables compartidas viven en `app/styles/tokens.css`, las reglas globales en `globals.css` y las utilidades usadas por el layout en `utilities.css`. Se conserva `app/`, conforme a React Router, en lugar de introducir otra raíz `src/`. La legibilidad y la mantenibilidad son prioritarias; esta base no incorpora los controles avanzados de la muestra experimental.
+
 **Trabajo por sprint:** concretar y revisar únicamente los detalles necesarios para la entrega que comienza. No se exige aprobar toda esta especificación antes de programar la estructura. Los contratos, datos, algoritmos y herramientas adicionales de las demos siguen como propuestas para sus respectivos sprints. Las recomendaciones siguientes orientan la implementación; las que excedan la base aprobada no se aprueban por asociación.
 
 | Área | Recomendación | Alternativa y motivo de la elección |
 | --- | --- | --- |
 | Render y navegación | React Router en modo Framework sobre Vite; generar las páginas informativas al compilar y servir archivos estáticos, con `ssr:false` y rutas explícitas de prerenderizado. | Una SPA declarativa necesita menos configuración inicial, pero deja la lectura dependiente de JavaScript. Para un portfolio se propone asumir la configuración adicional y entregar el contenido profesional en HTML. No se necesita un servidor de aplicación en producción. |
 | Idiomas | Rutas ES/EN y diccionarios tipados propios para un vocabulario acotado; formatos con `Intl`. | i18next ofrece herramientas adicionales de traducción. Dos idiomas mantenidos por el autor permiten empezar con estructuras tipadas y plantillas sencillas, sin introducir un motor general de traducción. |
-| Estilos | CSS Modules por componente y variables CSS para colores, tipografías, espacios e imágenes. | Tailwind también sería viable, pero los estilos actuales y la personalización posterior encajan directamente en CSS. Una biblioteca de componentes visuales impondría convenciones que luego habría que adaptar. |
+| Estilos | CSS Modules por componente y variables CSS para colores, tipografías, espacios e imágenes. | Tailwind también sería viable; CSS Modules permite definir el diseño propio en CSS. Los estilos del prototipo no son una referencia visual. Una biblioteca de componentes visuales impondría convenciones que luego habría que adaptar. |
+| Componentes — definido | Base UI para controles interactivos compuestos, con estilos propios mediante CSS Modules. | Elegido expresamente por el autor. No se adopta una apariencia prediseñada ni se incorpora Tailwind. |
 | Estado | `useState` para controles simples y `useReducer` para cada demo; funciones de dominio independientes de React. | Un almacén global añade coordinación que estas demos independientes no necesitan. El idioma y la navegación sí son compartidos; los inventarios, reintentos y migraciones no. |
 | Recursos de AIA | Red local dibujada con SVG y datos propios. | Una librería cartográfica no aporta valor al mapa ficticio acordado. No hay cartografía geográfica, tiles ni API de mapas. |
 | Animación | CSS y APIs del navegador; la simulación determina los datos y la animación solo los representa. | Una librería de animación puede reconsiderarse si las imágenes finales requieren capacidades concretas. No se añade por anticipado. |
@@ -179,9 +190,11 @@ Ejemplos de aceptación: la primera ejecución completa r1–r3 y deja r4–r6 e
 
 ## CaixaBank — flujo acordado y diseño técnico propuesto
 
-**Definido:** listado de tarjetas → detalle → movimientos, con información ausente, fallo parcial y fallo total, recuperación y detalle técnico opcional.
+**Definido:** listado de tarjetas → detalle → movimientos, con información ausente, fallo parcial y fallo total, recuperación y detalle técnico opcional sin visor de JSON.
 
-**Propuesta técnica pendiente de revisión:** los contratos, datos, cantidades, controles específicos, estados, latencias y reglas de reintento que siguen. La aceptación del recorrido no aprueba automáticamente esos detalles.
+**Definido — recuperación:** en los fallos parciales y totales fallan el intento inicial y tres reintentos automáticos. Solo al agotarlos se muestra el error con el botón de reintento manual; esa nueva consulta funciona en su primer intento. Se conserva el detalle en el fallo parcial y no se solicitan dependencias en el total. Esta decisión no adopta todavía TanStack React Query como dependencia.
+
+**Propuesta técnica pendiente de revisión:** los contratos, datos, cantidades, controles específicos, estados, latencias y las demás reglas que siguen. La aceptación del recorrido no aprueba automáticamente esos detalles.
 
 Se propone consultar dos tarjetas ficticias y abrir detalle/movimientos en un marco de móvil propio. No ejecuta pagos ni fraccionamientos. El adaptador local expone funciones asíncronas; no necesita un servidor HTTP.
 
@@ -216,13 +229,14 @@ Tres controles principales: «Todo funciona», «Falta información» y «Algo f
 | --- | --- | --- |
 | Normal | Todas las operaciones correctas. | Lista, detalle y movimientos; volver y elegir otra tarjeta. |
 | Información ausente | Detalle correcto con `movementsRef:null`. | Conservar detalle; mostrar ausencia; no pedir movimientos ni ofrecer reintento para esa ausencia. |
-| Error parcial | Primer intento de movimientos por referencia falla con `MOVEMENTS_UNAVAILABLE`. | Conservar detalle; reintentar solo movimientos. El segundo intento de esa referencia tiene éxito. |
-| Error total | Primer intento de lista falla con `CARDS_UNAVAILABLE`. | No pedir dependencias; mostrar error y permitir reintentar consulta o volver al inicio. El segundo intento obtiene la lista. |
+| Error parcial | El intento inicial de movimientos y tres reintentos automáticos por referencia fallan con `MOVEMENTS_UNAVAILABLE`. | Conservar detalle y mostrar carga durante los intentos. Tras el cuarto fallo, mostrar error; el botón reintenta solo movimientos y obtiene éxito en el primer intento manual. |
+| Error total | El intento inicial de lista y tres reintentos automáticos fallan con `CARDS_UNAVAILABLE`. | No pedir dependencias; mostrar carga hasta agotar los intentos y después error. Permitir reintentar consulta o volver al inicio; el primer intento de la consulta manual obtiene la lista. |
 
 ### Estados y consistencia
 
 - Inicio: escenario normal, sin consultas, detalle cerrado y logs vacíos. «Consultar tarjetas» inicia el flujo; el scroll no lo inicia.
-- Latencia sintética propuesta: 300 ms por operación, controlada por reloj en tests. Sin aleatoriedad en fallos o tiempos.
+- Latencia sintética propuesta: 300 ms por operación, controlada por reloj en tests. Esperas entre reintentos propuestas: 1, 2 y 4 segundos. Sin aleatoriedad en fallos o tiempos.
+- Si se adopta React Query, configurar tres reintentos y evitar que recargas por foco, reconexión o montaje recuperen el escenario antes de la acción manual. Aislar la caché por ejecución, escenario y referencia. La elección de herramienta sigue pendiente.
 - Deshabilitar acciones que dupliquen una operación pendiente y mostrar carga. Cambio de escenario y reinicio siguen disponibles.
 - Cambiar escenario/subtipo descarta peticiones anteriores, datos, selección, logs y contadores; vuelve al inicio del escenario elegido sin consultar automáticamente.
 - «Reiniciar demo» restaura el inicio global y escenario normal. «Volver al inicio» tras error total conserva escenario y contadores para permitir recuperación en el siguiente intento.
@@ -232,7 +246,7 @@ Tres controles principales: «Todo funciona», «Falta información» y «Algo f
 
 ### Registros y datos límite — propuesta
 
-Cada operación añade un registro de inicio y uno de resultado/error, con executionId, operationId, operación, parámetros, instante relativo y payload o código. Se derivan de las operaciones locales; el JSON no es una grabación desconectada del estado. Abrir/cerrar el panel no reinicia la demo. El idioma cambia etiquetas y explicaciones, no los identificadores ni las cantidades del payload.
+Cada operación añade un registro de inicio y uno de resultado/error, con executionId, operationId, operación, parámetros, instante relativo y payload o código. Se derivan de las operaciones locales y permanecen como instrumentación interna propuesta; no se muestran mediante un visor de JSON. El idioma cambia etiquetas y explicaciones, no los identificadores ni las cantidades del payload.
 
 Añadir a las pruebas, sin nuevos controles públicos, un caso items vacío, una referencia desconocida, un importe inválido y una respuesta cuyo cardId no coincida con la selección. Validación inválida presenta error de etapa y permite volver o reiniciar; no ofrece un reintento que no pueda corregir el dato. Las incidencias controladas de lista/movimientos sí permiten recuperación en el siguiente intento conforme al escenario.
 
@@ -245,10 +259,10 @@ Estos casos solo serán exigibles si se adopta el diseño anterior:
 3. Una referencia nula evita la llamada a movimientos y su reintento; una lista vacía se distingue de información ausente.
 4. Reintento, cambio de escenario y reinicio respetan las reglas de contadores y estados; los recorridos son repetibles.
 5. Cambiar escenario o tarjeta durante una petición no muestra respuestas antiguas ni mezcla registros.
-6. El error parcial conserva detalle; reintentar solicita solo movimientos y recupera sus datos.
-7. El error total no dispara llamadas dependientes; reintentar obtiene la lista y permite continuar.
+6. El error parcial conserva detalle durante los cuatro intentos fallidos; después muestra error y reintentar solicita solo movimientos, recuperándolos en el primer intento manual.
+7. El error total agota cuatro intentos sin disparar llamadas dependientes; después muestra error y reintentar obtiene la lista en el primer intento manual y permite continuar.
 8. La doble activación no duplica operaciones. Referencias desconocidas o campos obligatorios inválidos generan error de etapa.
-9. Abrir/cerrar el detalle técnico no reinicia la demo. Muestra operación, entrada, inicio/resultado/error, JSON sintético y cálculo del disponible a partir de la ejecución; no presenta llamadas reales ni registros pregrabados como ejecución.
+9. Abrir/cerrar el detalle técnico no reinicia la demo. Explica las dependencias, transformaciones y cálculo del disponible de forma coherente con la ejecución, sin visor de JSON; no presenta operaciones simuladas como llamadas reales.
 
 ## Calidad y validación
 
@@ -280,13 +294,15 @@ Antes de publicar, comprobar el alcance completo, las tres demos, el CV/contacto
 
 La especificación conserva comportamientos, contratos, decisiones vigentes y cuestiones pendientes. El diseño visual se concreta por separado. El README recoge instrucciones de ejecución; el código y la configuración fijan versiones y comandos reales. Las reglas de trabajo corresponden a AGENTS.md y las entregas a PLANIFICACION.md. No se presupone que esos materiales estén creados o completos.
 
-## Referencia visual y recursos pendientes
+## Referencia estructural y recursos visuales pendientes
 
-Se adopta como base el prototipo aportado por el autor, actualizado en `portfolio-prototipo-base.html`. Conserva portada y navegación mediante camino/nodos; las páginas Cómo lo construí y Contacto se separan del recorrido de experiencias. El orden es CaixaBank → ALTIA → AIA, seguido de formación y tecnologías.
+Se adopta únicamente como referencia estructural el prototipo aportado por el autor, actualizado en `portfolio-prototipo-base.html`. Conserva portada y navegación mediante camino/nodos; las páginas Cómo lo construí y Contacto se separan del recorrido de experiencias. El orden es CaixaBank → ALTIA → AIA, seguido de formación y tecnologías.
+
+**Definido:** los estilos del prototipo se ignoran cada vez que se consulte o utilice. No se copian ni se toman como guía sus colores, tipografías, bordes, radios, sombras, espaciados o efectos, tampoco en pruebas y experimentos. El diseño visual se concreta por separado con el autor.
 
 La maqueta permite revisar escritorio y móvil. En móvil se propone disponer el camino horizontal sobre el contenido para conservar espacio para las demos. La adaptación concreta queda sujeta a revisión visual del autor.
 
-El camino y sus nodos tendrán recursos gráficos por sección: temática bancaria y tarjeta, flujo de archivos y documento, carretera y vehículo. Los marcadores actuales son provisionales. Colores, tipografías e imágenes definitivos los decidirá el autor más adelante; los recursos deben poder sustituirse sin cambiar las reglas de navegación. Los nodos conservan etiquetas y controles nativos aunque se utilicen imágenes decorativas.
+El camino y sus nodos tendrán recursos gráficos por sección: temática bancaria y tarjeta, flujo de archivos y documento, carretera y vehículo. Los marcadores actuales son provisionales. La base visual adoptada es relieve con verde Sacramento y tonos derivados; las tipografías, imágenes y detalles restantes se concretan con el autor. Los recursos deben poder sustituirse sin cambiar las reglas de navegación. Los nodos conservan etiquetas y controles nativos aunque se utilicen imágenes decorativas.
 
 El prototipo contiene interacciones locales y ejemplos verificables para revisar el alcance; no sustituye la implementación final en React ni aprueba automáticamente contratos, datos, estilos o herramientas pendientes.
 
@@ -314,3 +330,15 @@ Estas fuentes sustentan capacidades de las herramientas; no convierten las recom
 - [Vitest: inicio](https://vitest.dev/guide/).
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/).
 - [Playwright: proyectos de prueba](https://playwright.dev/docs/test-projects).
+- [Base UI: instalación y uso con CSS Modules](https://base-ui.com/react/overview/quick-start).
+
+
+## Registro de cambios
+
+- **09/10/2026 · v0.1:** primera versión identificada de este documento; actualizado el caso CaixaBank para excluir el visor de JSON por decisión expresa. Se conservan los contratos y registros internos como propuesta y el detalle técnico opcional.
+
+- **09/10/2026 · v0.2:** adoptada la recuperación de CaixaBank tras un intento inicial y tres reintentos automáticos fallidos, seguida de éxito en la consulta manual. TanStack React Query continúa pendiente de adopción.
+
+- **09/10/2026 · v0.3:** adoptado Base UI para componentes interactivos sin estilo, conservando CSS Modules y variables CSS para el diseño propio.
+- **09/10/2026 · v0.4:** aclarado que el prototipo es exclusivamente estructural y que sus estilos no se utilizan como referencia visual, tampoco en experimentos.
+- **09/10/2026 · v0.5:** adoptado relieve con verde Sacramento; definido un layout y navbar compartidos, componentes básicos y estilos centralizados. Retirada de experimentos con páginas vacías, sin dar por completado el Sprint 1 ni las rutas ES/EN.

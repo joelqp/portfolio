@@ -1,4 +1,6 @@
 <!doctype html>
+<!-- Revisión 09/10/2026: retirado el visor de JSON de CaixaBank. -->
+<!-- Revisión 09/10/2026: cuatro intentos fallidos antes de la recuperación manual en CaixaBank. -->
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Portfolio — prototipo base</title><style>body{margin:0;padding:16px;background:light-dark(#ffffff,#101211);color-scheme:light dark}button,select,summary{cursor:pointer}@media(max-width:500px){body{padding:8px}}</style></head><body>
 <div id="system-trace-portfolio">
 <style>
@@ -471,7 +473,7 @@
     <main class="st-section-content">
       <section class="st-section-panel" data-panel="caixa">
         <header class="st-section-head"><div><p class="st-overline" data-en="Most recent experience · 01">Experiencia más reciente · 01</p><h2>CaixaBank Tech</h2><p class="st-section-role" data-en="Software engineer · Integration and product">Ingeniero de software · Integración y producto</p></div><div class="st-date" data-en="Oct 2024 — present">Oct 2024 — actualidad</div></header>
-        <div class="st-aia-grid"><article class="st-story"><h3 data-en="My contribution">Mi contribución</h3><p data-en="React interfaces for instalment payments, card dashboards and operations, working as part of a team.">Interfaces React para fraccionamiento de pagos, dashboard de tarjetas y operativas, dentro de un equipo.</p><p data-en="API response transformation, dependent calls, incomplete data and recovery states. Close contact with requirements and coordination with consultancies.">Transformación de respuestas de APIs, llamadas dependientes, datos incompletos y estados de recuperación. Cercanía a requisitos y coordinación con consultoras.</p><div class="st-story-rule"><span data-en="Professional experience">Experiencia profesional</span><strong>React · APIs · Ionic SPA</strong></div><div class="st-story-rule"><span data-en="Personal recreation">Recreación personal</span><strong data-en="Local card query · Fictional data">Consulta local de tarjetas · Datos ficticios</strong></div><p class="st-disclaimer" data-en="This is not an internal interface and makes no real banking requests.">No es una interfaz interna ni realiza consultas bancarias reales.</p></article><div><div class="st-demo" id="st-bank"></div><details class="st-technical"><summary data-en="Technical detail · JSON and logs">Detalle técnico · JSON y registros</summary><p data-en="Local synthetic operations from this prototype. The technical contracts are still a proposal.">Operaciones sintéticas locales de este prototipo. Los contratos técnicos siguen siendo una propuesta.</p><pre id="st-bank-json"></pre></details></div></div>
+        <div class="st-aia-grid"><article class="st-story"><h3 data-en="My contribution">Mi contribución</h3><p data-en="React interfaces for instalment payments, card dashboards and operations, working as part of a team.">Interfaces React para fraccionamiento de pagos, dashboard de tarjetas y operativas, dentro de un equipo.</p><p data-en="API response transformation, dependent calls, incomplete data and recovery states. Close contact with requirements and coordination with consultancies.">Transformación de respuestas de APIs, llamadas dependientes, datos incompletos y estados de recuperación. Cercanía a requisitos y coordinación con consultoras.</p><div class="st-story-rule"><span data-en="Professional experience">Experiencia profesional</span><strong>React · APIs · Ionic SPA</strong></div><div class="st-story-rule"><span data-en="Personal recreation">Recreación personal</span><strong data-en="Local card query · Fictional data">Consulta local de tarjetas · Datos ficticios</strong></div><p class="st-disclaimer" data-en="This is not an internal interface and makes no real banking requests.">No es una interfaz interna ni realiza consultas bancarias reales.</p></article><div><div class="st-demo" id="st-bank"></div><details class="st-technical"><summary data-en="Technical detail">Detalle técnico</summary><p data-en="Local synthetic operations from this prototype. The technical contracts are still a proposal.">Operaciones sintéticas locales de este prototipo. Los contratos técnicos siguen siendo una propuesta.</p></details></div></div>
       </section>
       <section class="st-section-panel" data-panel="altia" hidden>
         <header class="st-section-head"><div><p class="st-overline" data-en="Previous experience · 02">Experiencia anterior · 02</p><h2>ALTIA</h2><p class="st-section-role" data-en="Software engineering intern · Migration and testing">Prácticas de ingeniería de software · Migración y pruebas</p></div><div class="st-date" data-en="Jul — Sep 2024">Jul — Sep 2024</div></header>
@@ -520,10 +522,20 @@
   let bank={scenario:'normal',subtype:'partial',stage:'start',selected:null,busy:false,detail:null,items:null,error:null,attempts:{},logs:[],epoch:0};
   function resetBank(scenario='normal',subtype='partial'){bank={scenario,subtype,stage:'start',selected:null,busy:false,detail:null,items:null,error:null,attempts:{},logs:[],epoch:bank.epoch+1};renderBank();}
   function bankLog(operation,state,payload){bank.logs.push({operation,state,payload});}
+  async function bankAttempts(key,operation,params,shouldFail,code,epoch){
+    for(let retry=0;retry<4;retry++){
+      if(retry>0){await delay(1000*2**(retry-1));if(epoch!==bank.epoch)return null;}
+      bankLog(operation,'start',params);await delay(220);if(epoch!==bank.epoch)return null;
+      bank.attempts[key]=(bank.attempts[key]||0)+1;
+      if(!shouldFail||bank.attempts[key]>4)return true;
+      bankLog(operation,'error',{code});
+    }
+    return false;
+  }
   async function bankQuery(){
-    if(bank.busy)return;const epoch=++bank.epoch;bank.busy=true;bank.error=null;bank.stage='loading';bankLog('getCards','start',{});renderBank();await delay(220);if(epoch!==bank.epoch)return;
-    bank.attempts.list=(bank.attempts.list||0)+1;
-    if(bank.scenario==='error'&&bank.subtype==='total'&&bank.attempts.list===1){bank.error='total';bank.stage='start';bankLog('getCards','error',{code:'CARDS_UNAVAILABLE'});}else{bank.stage='list';bankLog('getCards','success',{cards:cards.map(c=>({id:c.id,last4:c.last4,detailRef:c.detailRef}))});}
+    if(bank.busy)return;const epoch=++bank.epoch;bank.busy=true;bank.error=null;bank.stage='loading';renderBank();
+    const result=await bankAttempts('list','getCards',{},bank.scenario==='error'&&bank.subtype==='total','CARDS_UNAVAILABLE',epoch);if(result===null)return;
+    if(!result){bank.error='total';bank.stage='start';}else{bank.stage='list';bankLog('getCards','success',{cards:cards.map(c=>({id:c.id,last4:c.last4,detailRef:c.detailRef}))});}
     bank.busy=false;renderBank();
   }
   async function bankSelect(id){
@@ -532,9 +544,9 @@
     if(bank.detail.movementsRef===null){renderBank();return;}await bankMovements();
   }
   async function bankMovements(){
-    if(bank.busy||!bank.detail?.movementsRef)return;const c=cards.find(c=>c.id===bank.selected),epoch=bank.epoch;bank.busy=true;bank.error=null;bankLog('getMovements','start',{movementsRef:c.movementsRef});renderBank();await delay(220);if(epoch!==bank.epoch)return;
-    bank.attempts[c.movementsRef]=(bank.attempts[c.movementsRef]||0)+1;
-    if(bank.scenario==='error'&&bank.subtype==='partial'&&bank.attempts[c.movementsRef]===1){bank.error='partial';bankLog('getMovements','error',{code:'MOVEMENTS_UNAVAILABLE'});}else{bank.items=c.items;bankLog('getMovements','success',{items:c.items.map(i=>({id:i.id,description:i.description[0],amountMinor:i.amountMinor}))});}
+    if(bank.busy||!bank.detail?.movementsRef)return;const c=cards.find(c=>c.id===bank.selected),epoch=bank.epoch;bank.busy=true;bank.error=null;renderBank();
+    const result=await bankAttempts(c.movementsRef,'getMovements',{movementsRef:c.movementsRef},bank.scenario==='error'&&bank.subtype==='partial','MOVEMENTS_UNAVAILABLE',epoch);if(result===null)return;
+    if(!result){bank.error='partial';}else{bank.items=c.items;bankLog('getMovements','success',{items:c.items.map(i=>({id:i.id,description:i.description[0],amountMinor:i.amountMinor}))});}
     bank.busy=false;renderBank();
   }
   function renderBank(){
@@ -553,7 +565,6 @@
       }
     }
     $('#st-bank').innerHTML=`<div class="st-demo-heading"><h3>${tr('Una consulta, distintos escenarios','One query, different scenarios')}</h3><p>${tr('Simulación local · contratos propuestos','Local simulation · proposed contracts')}</p></div><div class="st-control-row">${Object.keys(labels).map(k=>`<button type="button" data-scenario="${k}" aria-pressed="${bank.scenario===k}">${labels[k]}</button>`).join('')}</div>${bank.scenario==='error'?`<div class="st-control-row"><label>${tr('Tipo de fallo','Failure type')} <select id="st-error-type"><option value="partial" ${bank.subtype==='partial'?'selected':''}>${tr('Parcial','Partial')}</option><option value="total" ${bank.subtype==='total'?'selected':''}>${tr('Total','Total')}</option></select></label></div>`:''}<div class="st-phone"><div class="st-phone-bar" aria-hidden="true"></div><div aria-live="polite">${screen}</div></div><div class="st-demo-footer"><span class="st-result">${tr('Datos ficticios · sin operaciones reales','Fictional data · no real operations')}</span>${action('bank-reset',tr('Reiniciar','Reset'))}</div>`;
-    $('#st-bank-json').textContent=JSON.stringify({scenario:bank.scenario,...(bank.scenario==='error'?{failure:bank.subtype}:{}),detail:bank.detail,...(bank.detail?{availableMinor:bank.detail.limitMinor-bank.detail.spentMinor}:{}),logs:bank.logs},null,2);
   }
 
   /* Synthetic migration: mapping, conflicts and selective retry. */
