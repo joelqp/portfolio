@@ -1,31 +1,36 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { Header } from '../Header/Header';
+import { usePageScrollNavigation } from '../../navigation/usePageScrollNavigation';
 import styles from './SiteLayout.module.css';
 
 export function SiteLayout({ children }: { children: ReactNode }) {
-  const { pathname } = useLocation();
+  usePageScrollNavigation();
+  const { pathname, hash, key } = useLocation();
   const mainRef = useRef<HTMLElement>(null);
-  const previousPath = useRef(pathname);
+  const previousLocation = useRef({ pathname, key });
 
   useEffect(() => {
-    if (previousPath.current !== pathname) {
+    const pageChanged = previousLocation.current.pathname !== pathname;
+    const navigationChanged = previousLocation.current.key !== key;
+
+    if (navigationChanged && (pageChanged || !hash)) {
       mainRef.current?.focus({ preventScroll: true });
-      previousPath.current = pathname;
     }
-  }, [pathname]);
+
+    previousLocation.current = { pathname, key };
+  }, [pathname, hash, key]);
 
   return (
     <div className={styles.layout}>
-      <a href="#contenido" className={styles.skipLink}>Saltar al contenido</a>
       <Header />
       <main
         id="contenido"
         ref={mainRef}
         tabIndex={-1}
-        className={`container ${styles.main}`}
+        className={styles.main}
       >
-        {children}
+        <div className={styles.content}>{children}</div>
       </main>
     </div>
   );

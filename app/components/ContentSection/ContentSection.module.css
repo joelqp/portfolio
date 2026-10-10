@@ -1,0 +1,18 @@
+.section {
+  --section-title-font-size: 1.25rem;
+
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  scroll-margin-top: var(--space-5);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--section-title-font-size);
+  font-weight: var(--font-weight-bold);
+}
+
+.section p {
+  margin: 0;
+}

@@ -1,48 +1,76 @@
 .header {
-  padding-block: var(--space-5);
+  --navigation-node-size: 1.125rem;
+  --navigation-label-font-size: var(--font-size-body);
+  --navigation-link-padding: var(--space-3);
+  --navigation-gap: var(--space-4);
+
+  align-self: stretch;
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
   background: var(--color-brand);
   color: var(--color-on-brand);
-  box-shadow: var(--shadow-brand);
 }
 
 .inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-5);
-}
-
-.brand {
-  color: var(--color-on-brand);
-  font-size: 1.25rem;
-  font-weight: var(--font-weight-bold);
-  text-decoration: none;
+  position: sticky;
+  top: var(--space-5);
 }
 
 .navigation {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
+  display: grid;
+  gap: var(--navigation-gap);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.destination {
+  position: relative;
+  min-width: 0;
+}
+
+.destination:not(:last-child)::after {
+  position: absolute;
+  top: var(--space-5);
+  bottom: calc(-1 * var(--space-5));
+  left: calc(var(--navigation-link-padding) + var(--navigation-node-size) / 2);
+  width: 2px;
+  background: var(--color-border);
+  content: '';
+}
+
 .link {
-  display: inline-flex;
-  align-items: center;
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--navigation-node-size) minmax(0, 1fr);
+  align-items: start;
+  align-content: start;
+  gap: var(--space-3);
   min-height: var(--control-height);
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-brand-hover);
+  padding: var(--navigation-link-padding);
+  border: 1px solid transparent;
   border-radius: var(--radius-control);
   color: var(--color-on-brand);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
   text-decoration: none;
-  transition:
-    background-color var(--duration-interaction) ease,
-    transform var(--duration-interaction) ease;
+  transition: background-color var(--duration-interaction) ease;
+}
+
+.node {
+  position: relative;
+  z-index: 1;
+  width: var(--navigation-node-size);
+  height: var(--navigation-node-size);
+  margin-top: var(--space-1);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+}
+
+.label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: var(--font-weight-medium);
+  font-size: var(--navigation-label-font-size);
 }
 
 .link:hover {
@@ -57,24 +85,67 @@
   box-shadow: var(--shadow-brand);
 }
 
+.active .node {
+  border-color: var(--color-brand);
+  background: var(--color-brand);
+}
+
 .header a:focus-visible {
+  position: relative;
+  z-index: 2;
   outline-color: var(--color-focus-on-dark);
 }
 
-.active:active {
-  transform: translateY(calc(var(--relief-depth) - 1px));
-  box-shadow: none;
-}
-
-@media (max-width: 40rem) {
+@media (min-width: 60.001rem) {
   .inner {
-    align-items: flex-start;
-    flex-direction: column;
+    max-height: calc(100svh - var(--space-5) - var(--space-5));
+    margin: calc(-1 * var(--space-2));
+    padding: var(--space-2);
+    overflow-y: auto;
+    scrollbar-width: thin;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .active:active {
-    transform: none;
+@media (max-width: 60rem) {
+  .header {
+    --navigation-gap: var(--space-2);
+
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    align-self: start;
+  }
+
+  .inner {
+    position: static;
+    top: auto;
+  }
+
+  .navigation {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .destination:not(:last-child)::after {
+    top: calc(var(--navigation-link-padding) + var(--space-1) + var(--navigation-node-size) / 2);
+    bottom: auto;
+    left: calc(var(--navigation-link-padding) + var(--navigation-node-size) / 2);
+    width: calc(100% + var(--navigation-gap));
+    height: 2px;
+  }
+
+  .link {
+    height: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 40rem) {
+  .header {
+    --navigation-label-font-size: var(--font-size-small);
+    --navigation-link-padding: var(--space-1);
+    --navigation-gap: var(--space-1);
+
+    padding: var(--space-3);
   }
 }

@@ -1,0 +1,37 @@
+.subnavigation {
+  margin-top: var(--space-3);
+  margin-left: calc(var(--navigation-link-padding) + var(--navigation-node-size) + var(--space-3));
+}
+
+.list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: block;
+  padding: var(--space-2);
+  color: var(--color-on-brand);
+  font-size: var(--font-size-small);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.link:hover {
+  background: var(--color-brand-hover);
+}
+
+.link[aria-current='location'] {
+  background: var(--color-accent-soft);
+  color: var(--color-brand);
+  font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 60rem) {
+  .subnavigation {
+    display: none;
+  }
+}

@@ -1,0 +1,16 @@
+.page {
+  display: grid;
+  gap: var(--space-7);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.introduction {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+}
+
+.introduction p {
+  margin: 0;
+}

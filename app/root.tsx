@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Links, Outlet, Scripts } from 'react-router';
+import { Links, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import { SiteLayout } from './components/SiteLayout/SiteLayout';
 import './styles/tokens.css';
 import './styles/globals.css';
@@ -16,6 +16,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </head>
       <body>
         {children}
+        <ScrollRestoration />
         <Scripts />
       </body>
     </html>

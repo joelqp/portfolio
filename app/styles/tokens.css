@@ -1,7 +1,7 @@
 :root {
   color-scheme: light;
 
-  /* Sacramento es la base; el resto de la paleta se deriva de este verde. */
+  /* Shared palette, derived from Sacramento green. */
   --color-brand: #043927;
   --color-brand-hover: #07523b;
   --color-brand-shadow: #01251b;
@@ -17,13 +17,16 @@
   --color-focus: #147354;
   --color-focus-on-dark: #c6e2d1;
 
+  /* Shared typography scale. */
   --font-family-body: system-ui, sans-serif;
   --font-size-small: 0.875rem;
   --font-size-body: 1rem;
+  --font-size-title: clamp(1.5rem, 3vw, 2.5rem);
   --font-weight-medium: 600;
   --font-weight-bold: 750;
   --line-height-body: 1.6;
 
+  /* Shared spacing scale. */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -32,9 +35,10 @@
   --space-6: 2rem;
   --space-7: 3rem;
 
-  --radius-control: 0.625rem;
-  --radius-card: 1rem;
-  --radius-pill: 999px;
+  /* Shared shapes, dimensions and interaction styles. */
+  --radius-control: 0;
+  --radius-card: 0;
+  --radius-pill: 0;
   --control-height: 3rem;
   --content-width: 75rem;
   --relief-depth: 0.25rem;
