@@ -6,6 +6,7 @@ import { navigationItems } from '../../app/navigation.ts';
 import * as jsxRuntime from 'react/jsx-runtime';
 import { getActiveProfileSection } from '../../app/navigation/getActiveProfileSection.ts';
 import * as placeholderContent from '../../app/content/placeholderContent.ts';
+import { ScrollPageTransition } from '../../app/navigation/ScrollPageTransition.ts';
 
 const sectionModule = {};
 const sectionSource = fs.readFileSync(new URL('../../app/navigation/profileSections.ts', import.meta.url), 'utf8');
@@ -27,9 +28,11 @@ export function createNavigationHarness(moduleName, options = {}) {
   const frames = new Map();
   const refs = [];
   const states = [];
+  const callbackSlots = [];
   const effectSlots = [];
   let refIndex = 0;
   let stateIndex = 0;
+  let callbackIndex = 0;
   let result;
   let effectIndex = 0;
   let nextFrame = 0;
@@ -67,23 +70,45 @@ export function createNavigationHarness(moduleName, options = {}) {
     element.querySelector = () => element;
     profileElements.set(id, element);
   }
-  const headerRef = { current: { getBoundingClientRect: () => ({ height: 120 }) } };
+  const headerRef = {
+    current: { getBoundingClientRect: () => ({
+      height: options.headerHeight ?? (options.horizontalHeader ? 120 : 0),
+      bottom: options.headerHeight ?? (options.horizontalHeader ? 120 : 0),
+    }) },
+  };
   const document = {
     body,
-    documentElement: new Element(),
     scrollingElement: page,
     getElementById: (id) => options.sectionTops
       ? profileElements.get(id) ?? null
       : id === 'caixa' ? section : null,
-    querySelector: (selector) => selector === 'main' ? main : null,
+    querySelector: (selector) => selector === 'main' ? main : selector === 'header' ? headerRef.current : null,
+    startViewTransition: options.startViewTransition,
+    documentElement: Object.assign(new Element(), {
+      attributes: new Map(),
+      style: { setProperty() {}, removeProperty() {} },
+      setAttribute(name, value) { this.attributes.set(name, value); },
+      removeAttribute(name) { this.attributes.delete(name); },
+      hasAttribute(name) { return this.attributes.has(name); },
+    }),
   };
   const window = {
     innerHeight: 500,
     get scrollY() { return page.scrollTop; },
     getComputedStyle: (element) => ({ overflowY: element.overflowY, scrollMarginTop: '24px' }),
-    matchMedia: () => ({ matches: options.horizontalHeader ?? false }),
-    addEventListener: (name, callback) => listeners.set(name, callback),
-    removeEventListener: (name) => listeners.delete(name),
+    matchMedia: (query) => ({ matches: query.includes('prefers-reduced-motion')
+      ? options.reducedMotion ?? false
+      : options.horizontalHeader ?? false }),
+    addEventListener: (name, callback, settings) => {
+      const entries = listeners.get(name) ?? [];
+      const entry = { callback, capture: settings?.capture ?? false };
+      if (entry.capture) entries.unshift(entry);
+      else entries.push(entry);
+      listeners.set(name, entries);
+    },
+    removeEventListener: (name, callback) => {
+      listeners.set(name, (listeners.get(name) ?? []).filter((entry) => entry.callback !== callback));
+    },
     requestAnimationFrame: (callback) => { frames.set(++nextFrame, callback); return nextFrame; },
     cancelAnimationFrame: (id) => frames.delete(id),
     scrollTo(settings) {
@@ -107,6 +132,15 @@ export function createNavigationHarness(moduleName, options = {}) {
   const navigate = (pathname, settings) => navigations.push({ pathname, settings });
   const dependencies = {
     react: {
+      useCallback(callback, dependencies) {
+        const index = callbackIndex++;
+        const previous = callbackSlots[index];
+        if (previous && dependencies.every((value, position) => Object.is(value, previous.dependencies[position]))) {
+          return previous.callback;
+        }
+        callbackSlots[index] = { callback, dependencies };
+        return callback;
+      },
       useRef(value) {
         const index = refIndex++;
         return refs[index] ?? (refs[index] = { current: value });
@@ -128,12 +162,22 @@ export function createNavigationHarness(moduleName, options = {}) {
     },
     '../navigation': { navigationItems },
     './PageScrollIntent': { PageScrollIntent },
+    './ScrollPageTransition': { ScrollPageTransition },
     './getActiveProfileSection': { getActiveProfileSection },
     './profileSections': { profileSectionItems },
+    './getProfileEntryAnimation': {
+      getProfileEntryAnimation: () => options.entryAnimation ?? null,
+    },
     'react/jsx-runtime': jsxRuntime,
     '../Header/Header': { Header: () => null },
-    '../../navigation/usePageScrollNavigation': { usePageScrollNavigation: () => {} },
+    '../ProfileSubnavigation/ProfileSubnavigation': { ProfileSubnavigation: () => null },
+    '../../navigation/usePageScrollNavigation': {
+      usePageScrollNavigation: () => ({ current: options.scrollLocationKey ?? null }),
+    },
+    '../../navigation/useNavigationDimensions': { useNavigationDimensions: () => {} },
+    '../../navigation/useProfileSectionNavigation': { useProfileSectionNavigation: () => {} },
     './SiteLayout.module.css': { default: {} },
+    '../../styles/pageTransition.module.css': {},
   };
   const modulePath = moduleName === 'SiteLayout'
     ? '../../app/components/SiteLayout/SiteLayout.tsx'
@@ -146,6 +190,14 @@ export function createNavigationHarness(moduleName, options = {}) {
   vm.runInNewContext(compiled, {
     exports,
     require(name) {
+      if (name === './useScrollPageTransition') {
+        const nested = {};
+        const source = fs.readFileSync(new URL('../../app/navigation/useScrollPageTransition.ts', import.meta.url), 'utf8');
+        vm.runInNewContext(ts.transpileModule(source, {
+          compilerOptions: { module: ts.ModuleKind.CommonJS },
+        }).outputText, { exports: nested, require: (dependency) => dependencies[dependency], window, document });
+        return nested;
+      }
       if (!(name in dependencies)) throw new Error(`Unexpected dependency: ${name}`);
       return dependencies[name];
     },
@@ -155,7 +207,7 @@ export function createNavigationHarness(moduleName, options = {}) {
   });
 
   return {
-    body, main, heading, section, page, navigations, scrollCalls, focusCalls,
+    body, main, heading, section, page, navigations, scrollCalls, focusCalls, document,
     get result() { return result; },
     createTarget(properties) { return Object.assign(new Element(), properties); },
     render(nextLocation = location, nextNavigationType = navigationType) {
@@ -163,6 +215,7 @@ export function createNavigationHarness(moduleName, options = {}) {
       navigationType = nextNavigationType;
       refIndex = 0;
       stateIndex = 0;
+      callbackIndex = 0;
       effectIndex = 0;
       if (moduleName === 'SiteLayout') {
         const layout = exports.SiteLayout({ children: null });
@@ -183,7 +236,7 @@ export function createNavigationHarness(moduleName, options = {}) {
         preventDefault() { this.defaultPrevented = true; },
         ...settings,
       };
-      listeners.get(name)?.(event);
+      for (const { callback } of listeners.get(name) ?? []) callback(event);
       return event;
     },
     dispose() { effectSlots.forEach((slot) => slot.cleanup?.()); },

@@ -108,6 +108,16 @@ test('resize recalculates the reading position beneath a horizontal header', () 
   harness.dispose();
 });
 
+test('the desktop marker accounts for the shared top navigation height', () => {
+  const harness = createProfileHarness({ headerHeight: 120 });
+  harness.render();
+  assert.equal(updateMarker(harness), null);
+  harness.page.scrollTop = 556;
+  harness.dispatch('scroll');
+  assert.equal(updateMarker(harness), 'altia');
+  harness.dispose();
+});
+
 test('leaving profile cancels pending measurements and scroll tracking', () => {
   const harness = createProfileHarness();
   harness.render();
@@ -118,5 +128,20 @@ test('leaving profile cancels pending measurements and scroll tracking', () => {
   assert.equal(updateMarker(harness), null);
   harness.dispatch('scroll');
   assert.equal(updateMarker(harness), null);
+  harness.dispose();
+});
+
+test('finishing expansion recalculates the marker without a scroll event', async () => {
+  let finishEntry;
+  const finished = new Promise((resolve) => { finishEntry = resolve; });
+  const harness = createProfileHarness({ entryAnimation: { finished } });
+  harness.render();
+  assert.equal(updateMarker(harness), null);
+  harness.page.scrollTop = 676;
+  finishEntry();
+  await finished;
+  assert.equal(updateMarker(harness), 'altia');
+  assert.equal(harness.navigations.length, 0);
+  assert.equal(harness.focusCalls.length, 0);
   harness.dispose();
 });

@@ -45,10 +45,16 @@
   --shadow-brand: 0 var(--relief-depth) 0 var(--color-brand-shadow);
   --shadow-surface: 0 var(--relief-depth) 0 var(--color-surface-shadow);
   --duration-interaction: 150ms;
+  --duration-panel-entry: 450ms;
+  --easing-panel-entry: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-page-transition: 450ms;
+  --easing-page-transition: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duration-interaction: 0ms;
+    --duration-panel-entry: 0ms;
+    --duration-page-transition: 0ms;
   }
 }

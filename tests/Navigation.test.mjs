@@ -2,6 +2,135 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createNavigationHarness } from './helpers/navigationHarness.mjs';
 
+function createCapture() {
+  let update, finish;
+  const finished = new Promise((resolve) => { finish = resolve; });
+  let skipped = false;
+  return {
+    startViewTransition(callback) {
+      update = callback;
+      return {
+        finished,
+        ready: Promise.resolve(),
+        updateCallbackDone: Promise.resolve(),
+        skipTransition() { skipped = true; },
+      };
+    },
+    update: () => update(),
+    finish: async () => { finish(); await finished; },
+    get skipped() { return skipped; },
+  };
+}
+
+test('scroll captures the destination at its edge and delays index entry until finished', async () => {
+  const capture = createCapture();
+  const harness = createNavigationHarness('usePageScrollNavigation', {
+    location: { pathname: '/' }, startViewTransition: capture.startViewTransition,
+  });
+  harness.render();
+  harness.dispatch('keydown', { key: 'PageDown' });
+  assert.equal(harness.document.documentElement.attributes.get('data-scroll-transition'), 'forward');
+  assert.equal(harness.navigations.length, 0);
+  const updated = capture.update();
+  harness.render({ pathname: '/profile', key: 'profile' }, 'PUSH');
+  await updated;
+  assert.equal(harness.result.current, 'profile');
+  assert.equal(harness.page.scrollTop, 0);
+  assert.equal(harness.navigations[0].settings.state.scrollPageEntry, 'top');
+  assert.equal(harness.document.documentElement.hasAttribute('data-scroll-transition'), true);
+  const wheel = harness.dispatch('wheel', { deltaY: 120, timeStamp: 1000, deltaMode: 0 });
+  assert.equal(wheel.defaultPrevented, true);
+  assert.equal(harness.navigations.length, 1);
+  await capture.finish();
+  assert.equal(harness.document.documentElement.hasAttribute('data-scroll-transition'), false);
+  harness.dispose();
+});
+
+test('history interrupts the snapshot without overriding its restored position', async () => {
+  const capture = createCapture();
+  const harness = createNavigationHarness('usePageScrollNavigation', { startViewTransition: capture.startViewTransition });
+  harness.render();
+  harness.dispatch('keydown', { key: 'PageDown' });
+  const updated = capture.update();
+  harness.page.scrollTop = 250;
+  harness.render({ pathname: '/', key: 'history' }, 'POP');
+  await updated;
+  assert.equal(harness.result.current, null);
+  assert.equal(capture.skipped, true);
+  assert.equal(harness.page.scrollTop, 250);
+  assert.equal(harness.scrollCalls.length, 0);
+  assert.equal(harness.document.documentElement.hasAttribute('data-scroll-transition'), false);
+  harness.dispose();
+});
+
+test('backward scroll captures the final edge and carries the stable mobile reservation', async () => {
+  const capture = createCapture();
+  const harness = createNavigationHarness('usePageScrollNavigation', {
+    location: { pathname: '/build' }, page: { scrollTop: 0 },
+    startViewTransition: capture.startViewTransition,
+  });
+  harness.render();
+  harness.dispatch('keydown', { key: 'PageUp' });
+  assert.equal(harness.document.documentElement.attributes.get('data-scroll-transition'), 'backward');
+  const updated = capture.update();
+  harness.render({ pathname: '/profile', key: 'profile' }, 'PUSH');
+  await updated;
+  assert.equal(harness.page.scrollTop, 500);
+  assert.equal(harness.navigations[0].settings.state.scrollPageEntry, 'bottom');
+  await capture.finish();
+  harness.dispose();
+});
+
+test('reduced motion bypasses an available snapshot API', () => {
+  const harness = createNavigationHarness('usePageScrollNavigation', {
+    reducedMotion: true,
+    startViewTransition() { throw new Error('Reduced motion must bypass capture'); },
+  });
+  harness.render();
+  harness.dispatch('keydown', { key: 'PageDown' });
+  assert.equal(harness.navigations.length, 1);
+  assert.equal(harness.document.documentElement.hasAttribute('data-scroll-transition'), false);
+  harness.render({ pathname: '/build', key: 'build' }, 'PUSH');
+  assert.equal(harness.page.scrollTop, 0);
+  assert.equal(harness.result.current, 'build');
+  harness.dispose();
+});
+
+test('scroll arrival does not programmatically focus main, and a later menu click still does', () => {
+  const harness = createNavigationHarness('SiteLayout', { scrollLocationKey: 'build-scroll' });
+  harness.render();
+  harness.render({ pathname: '/build', key: 'build-scroll', state: { scrollPageEntry: 'top' } }, 'PUSH');
+  assert.equal(harness.focusCalls.length, 0);
+  harness.render({ key: 'build-menu' }, 'PUSH');
+  assert.equal(harness.focusCalls.length, 1);
+  assert.equal(harness.focusCalls[0].element, harness.main);
+  harness.dispose();
+});
+
+test('history with saved scroll entry metadata retains normal route focus', () => {
+  const harness = createNavigationHarness('SiteLayout');
+  harness.render();
+  harness.render({ pathname: '/build', key: 'history', state: { scrollPageEntry: 'top' } }, 'POP');
+  assert.equal(harness.focusCalls.length, 1);
+  assert.equal(harness.focusCalls[0].element, harness.main);
+  harness.dispose();
+});
+
+test('a same-page menu click after a completed scroll clears the transient source marker', async () => {
+  const capture = createCapture();
+  const harness = createNavigationHarness('usePageScrollNavigation', { startViewTransition: capture.startViewTransition });
+  harness.render();
+  harness.dispatch('keydown', { key: 'PageDown' });
+  const updated = capture.update();
+  harness.render({ pathname: '/build', key: 'scroll-build' }, 'PUSH');
+  await updated;
+  await capture.finish();
+  assert.equal(harness.result.current, 'scroll-build');
+  harness.render({ key: 'build-menu', state: { scrollPageEntry: 'top' } }, 'PUSH');
+  assert.equal(harness.result.current, null);
+  harness.dispose();
+});
+
 test('selecting the current page again moves focus from navigation to main', () => {
   const harness = createNavigationHarness('SiteLayout');
   harness.render();
@@ -157,6 +286,18 @@ test('a mobile profile anchor accounts for header height and focuses its heading
   harness.dispose();
 });
 
+test('a desktop profile anchor also clears the shared top navigation', () => {
+  const harness = createNavigationHarness('useProfileSectionNavigation', {
+    location: { hash: '#caixa' }, headerHeight: 120,
+    page: { scrollHeight: 2000 },
+  });
+  harness.render();
+  harness.flushFrames();
+  assert.equal(harness.page.scrollTop, 556);
+  assert.equal(harness.focusCalls[0].element, harness.heading);
+  harness.dispose();
+});
+
 for (const hash of ['#caixa', '#unknown']) {
   test(`history restoration is not overwritten by ${hash}, including the initial entry`, () => {
     const harness = createNavigationHarness('useProfileSectionNavigation', { location: { hash } });
@@ -180,5 +321,39 @@ test('a new anchor navigation cancels a stale pending jump', () => {
   harness.flushFrames();
   assert.equal(harness.scrollCalls.length, 1);
   assert.equal(harness.page.scrollTop, 0);
+  harness.dispose();
+});
+
+test('an anchor waits for panel expansion before measuring its final position', async () => {
+  let finishEntry;
+  const finished = new Promise((resolve) => { finishEntry = resolve; });
+  const harness = createNavigationHarness('useProfileSectionNavigation', {
+    location: { hash: '#caixa' }, headerHeight: 120,
+    page: { scrollHeight: 2000 }, entryAnimation: { finished },
+  });
+  harness.render();
+  harness.flushFrames();
+  assert.equal(harness.scrollCalls.length, 0);
+  harness.section.getBoundingClientRect = () => ({ top: 900 - harness.page.scrollTop });
+  finishEntry();
+  await finished;
+  assert.equal(harness.page.scrollTop, 756);
+  assert.equal(harness.focusCalls[0].element, harness.heading);
+  harness.dispose();
+});
+
+test('leaving profile cancels an anchor waiting for panel expansion', async () => {
+  let finishEntry;
+  const finished = new Promise((resolve) => { finishEntry = resolve; });
+  const harness = createNavigationHarness('useProfileSectionNavigation', {
+    location: { hash: '#caixa' }, entryAnimation: { finished },
+  });
+  harness.render();
+  harness.flushFrames();
+  harness.render({ pathname: '/build', hash: '', key: 'build' }, 'PUSH');
+  finishEntry();
+  await finished;
+  assert.equal(harness.scrollCalls.length, 0);
+  assert.equal(harness.focusCalls.length, 0);
   harness.dispose();
 });

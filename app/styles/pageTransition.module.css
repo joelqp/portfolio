@@ -1,0 +1,75 @@
+/* Viewport snapshots keep long pages and the fixed mobile index in one surface. */
+:global(html[data-scroll-transition]::view-transition) {
+  pointer-events: none;
+}
+
+:global(html[data-scroll-transition]::view-transition-group(root)) {
+  animation: none;
+  clip-path: inset(var(--page-transition-top) 0 0);
+}
+
+:global(html[data-scroll-transition]::view-transition-image-pair(root)) {
+  isolation: isolate;
+}
+
+:global(html[data-scroll-transition]::view-transition-old(root)),
+:global(html[data-scroll-transition]::view-transition-new(root)) {
+  height: 100%;
+  width: 100%;
+  object-fit: fill;
+  clip-path: inset(var(--page-transition-top) 0 0);
+  mix-blend-mode: normal;
+  opacity: 1;
+  animation-duration: var(--duration-page-transition);
+  animation-timing-function: var(--easing-page-transition);
+  animation-fill-mode: both;
+}
+
+:global(html[data-scroll-transition='forward']::view-transition-old(root)) {
+  animation-name: pageExitUp;
+}
+
+:global(html[data-scroll-transition='forward']::view-transition-new(root)) {
+  animation-name: pageEnterUp;
+}
+
+:global(html[data-scroll-transition='backward']::view-transition-old(root)) {
+  animation-name: pageExitDown;
+}
+
+:global(html[data-scroll-transition='backward']::view-transition-new(root)) {
+  animation-name: pageEnterDown;
+}
+
+:global(html[data-scroll-transition]::view-transition-group(site-header)),
+:global(html[data-scroll-transition]::view-transition-old(site-header)),
+:global(html[data-scroll-transition]::view-transition-new(site-header)) {
+  animation: none;
+}
+
+:global(html[data-scroll-transition]::view-transition-old(site-header)) {
+  display: none;
+}
+
+@keyframes pageExitUp {
+  to { transform: translateY(calc(-1 * var(--page-transition-distance))); }
+}
+
+@keyframes pageEnterUp {
+  from { transform: translateY(var(--page-transition-distance)); }
+}
+
+@keyframes pageExitDown {
+  to { transform: translateY(var(--page-transition-distance)); }
+}
+
+@keyframes pageEnterDown {
+  from { transform: translateY(calc(-1 * var(--page-transition-distance))); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html[data-scroll-transition]::view-transition-old(root)),
+  :global(html[data-scroll-transition]::view-transition-new(root)) {
+    animation: none;
+  }
+}

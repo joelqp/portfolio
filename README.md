@@ -1,6 +1,6 @@
 # Portfolio · 0.1.2
 
-Las rutas `/`, `/profile`, `/build` y `/contact` comparten un mapa de navegación y un panel de lectura. Los destinos conectados aparecen a la izquierda en escritorio y encima del panel en móvil, con nodo y nombre; la página activa se distingue por su estilo y `aria-current`. El panel muestra directamente los textos de relleno identificados como provisionales, sin encabezado compartido ni numeración. Perfil incluye reservas para las demos de CaixaBank Tech, ALTIA y AIA; ninguna está implementada. La estructura completa y las rutas bilingües del Sprint 1 siguen pendientes.
+Las rutas `/`, `/profile`, `/build` y `/contact` comparten una barra superior horizontal y un panel de lectura. «Joel / Inicio» en una sola línea forma un único enlace a `/`, a la izquierda de Perfil profesional, Cómo lo construí y Contacto. La página activa se distingue por su estilo y `aria-current`. Solo Perfil dispone de un índice lateral en escritorio; en tablet/móvil ese índice queda fijo en el borde inferior. Las demás páginas no tienen columna lateral. El panel muestra textos provisionales identificados, sin encabezado compartido ni numeración. Perfil incluye reservas para las demos de CaixaBank Tech, ALTIA y AIA; ninguna está implementada. La estructura completa y las rutas bilingües del Sprint 1 siguen pendientes.
 
 Base visual: verde Sacramento (`#043927`) y tonos verdes derivados, con esquinas rectas. Header y panel principal se unen sin separación, bordes exteriores ni sombras; el encabezado del panel no tiene línea divisoria. Los componentes conservan sus estilos de relieve. Los estilos del prototipo no se utilizan como referencia visual.
 
@@ -8,12 +8,14 @@ Base visual: verde Sacramento (`#043927`) y tonos verdes derivados, con esquinas
 
 - `app/root.tsx`: documento HTML, estilos globales y conexión del layout a las rutas.
 - `app/navigation.ts`: destinos y nombres de la navegación.
-- `app/navigation/`: detección de un nuevo gesto al final de la página y avance al siguiente destino; regla independiente e integración con React Router.
+- `app/navigation/`: detección de gestos en los límites (`PageScrollIntent` y `usePageScrollNavigation`), coordinación de destino/cancelación (`ScrollPageTransition`) y adaptación a React Router/View Transition (`useScrollPageTransition`).
 - `app/components/SiteLayout/` y `Header/`: marco común y navbar, definido una sola vez.
 - `app/components/PageContent/`, `ContentSection/` y `DemoPlaceholder/`: introducción provisional, secciones con anclas y reservas de demos.
-- `app/components/ProfileSubnavigation/`: enlaces a las cinco secciones de Perfil, visibles bajo su destino únicamente en escritorio.
+- `app/components/ProfileSubnavigation/`: índice específico de las cinco subsecciones de Perfil, lateral en escritorio y fijo abajo en tablet/móvil; seguimiento de sección activa.
 - `app/content/placeholderContent.ts`: textos de relleno y descripciones de las futuras demos, separados de la presentación.
 - `app/components/Button/`, `Card/`, `Badge/`, `TextField/`, `Checkbox/` y `Switch/`: componentes básicos reutilizables, con CSS Modules propios. Card y Badge se utilizan en el contenido provisional y las reservas.
+- `app/styles/motion.module.css`: efectos reutilizables: `slideIn` con `fromLeft`/`fromBottom`, `expandInPlace`, `reserveBlockSpace` y `fadeAfterExpansion`. Perfil compone apertura y fundido; las variables `--expansion-inline-start/end`, `--expansion-block-start/end` y `--reserved-block-space` definen los tamaños. Duraciones y curva están en tokens; movimiento reducido muestra directamente el resultado.
+- `app/styles/pageTransition.module.css`: efecto de continuidad vertical por scroll; captura el viewport, recorta cada superficie bajo Header y desplaza ambas la misma distancia. El efecto se puede sustituir sin modificar detección ni coordinación.
 - `app/styles/tokens.css`: colores, tipografía, espacios y relieve compartidos. `globals.css`: reglas generales. `utilities.css`: contenedor común.
 - `app/routes/`: páginas `HomePage.tsx`, `ProfilePage.tsx`, `BuildPage.tsx` y `ContactPage.tsx`; archivos y componentes de página utilizan el sufijo `Page`. Sus URLs son `/`, `/profile`, `/build` y `/contact`.
 
@@ -21,7 +23,7 @@ Button, Checkbox y Switch utilizan Base UI **1.9.0**. Card, Badge y TextField ut
 
 Para cambiar la paleta, editar los valores de `tokens.css`. Para cambiar un componente, editar su archivo y su CSS Module. Los componentes aceptan las propiedades de sus elementos o de Base UI; Button ofrece `primary`, `secondary` y `ghost`, y Card ofrece `raised` y `outlined`.
 
-Las variables específicas están en sus CSS Modules: ancho de navegación en `SiteLayout`, tamaño de nodos, espacios y texto de navegación en `Header`. Los tokens globales quedan agrupados por función. El header ocupa toda la altura del panel en escritorio; las etiquetas de navegación pasan de 1 rem a 0,875 rem en móvil. En tablet/móvil, los cuatro destinos permanecen en una sola fila horizontal conectada; los nombres completos se reparten en varias líneas debajo de cada nodo, sin desplazamiento horizontal.
+Las variables específicas están en los CSS Modules: ancho del índice lateral en `SiteLayout`, nodos y conexiones en `ProfileSubnavigation` y disposición horizontal en `Header`. Los tokens globales quedan agrupados por función. Header permanece arriba durante el scroll en todos los tamaños. La marca usa el tamaño de cuerpo con Inicio en tamaño pequeño, ambos en una sola línea; el padding vertical de Header y enlaces se reduce a `--space-1`, manteniendo la altura mínima de control; los tres enlaces de página aparecen a su derecha sin nodos ni conexiones. Solo el índice de Perfil mantiene cinco destinos conectados, verticales en escritorio y en cinco columnas abajo hasta 60 rem. Las etiquetas completas pueden ocupar varias líneas sin desplazamiento horizontal. `useNavigationDimensions` mide las barras con ResizeObserver para situar el índice bajo Header y reservar espacio inferior en Perfil.
 
 ## Ejecución
 
@@ -40,17 +42,21 @@ npm run preview
 
 Al llegar al final, un nuevo gesto hacia abajo avanza a la página siguiente: Inicio → Perfil → Cómo lo construí → Contacto. Al estar al principio, un nuevo gesto hacia arriba lleva al final de la página anterior. Llegar a cualquiera de esos límites durante el mismo gesto no cambia de página; Inicio no tiene anterior y Contacto no tiene siguiente. Se admiten rueda/trackpad, gesto táctil, PageDown/Flecha abajo/Espacio para avanzar y PageUp/Flecha arriba/Mayús+Espacio para retroceder. La interacción real en navegador sigue pendiente de comprobación.
 
-En Perfil, la sublista enlaza a CaixaBank Tech, ALTIA, AIA, Formación y Tecnologías. Está visible bajo Perfil profesional solo en escritorio; en tablet/móvil no se muestra sublista ni desplegable. Las secciones siguen presentes en la página y mantienen sus anclas. Esta disposición sigue pendiente de revisión visual.
+En Perfil, el índice enlaza a CaixaBank Tech, ALTIA, AIA, Formación y Tecnologías. Solo existe en esta página: aparece a la izquierda bajo Header en escritorio y fijo en el borde inferior en tablet/móvil, con espacio reservado para no tapar el contenido y margen seguro del dispositivo. Las subsecciones permanecen visibles, sin desplegable por foco o hover. Las anclas descuentan la altura real del Header en todos los tamaños y enfocan el título de destino. Esta disposición sigue pendiente de revisión visual.
+
+Al entrar en Perfil, el espacio del índice se abre desde su propia posición durante 450 ms: aumenta el ancho del contenedor lateral en escritorio y la altura de la barra inferior en tablet/móvil. En escritorio, main ocupa inicialmente todo el ancho, sin hueco a la izquierda, y se estrecha mientras el índice lo empuja hacia la derecha. El contenido interior mantiene desde el inicio el ancho final de lectura con el índice abierto, calculado respecto al layout completo, para conservar los saltos de línea durante ese desplazamiento. Ese ancho sigue adaptándose a la pantalla. En tablet/móvil, la reserva inferior crece con la barra. Después aparecen los enlaces con un fundido automático de 150 ms. No depende de hover. Se ejecuta una vez al montar el índice, también en carga directa; no se repite con scroll, anclas o cambios de tamaño. Al salir y volver a Perfil se monta de nuevo. La preferencia de movimiento reducido elimina ambas animaciones. Las anclas esperan al final de la apertura para medir la posición definitiva y el seguimiento de sección vuelve a calcularse al terminar. El efecto no utiliza portal ni comportamiento modal.
 
 La subsección marcada sigue el scroll cuando su título alcanza el borde superior de lectura, considerando el margen de ancla. Antes de la primera sección no hay marca; al final se marca Tecnologías aunque su bloque no pueda llegar hasta ese borde. El seguimiento actualiza solo la marca, sin cambiar URL, historial o foco; los clics conservan sus anclas y el foco en el título. La marca de un clic se conserva hasta cambiar la posición de scroll, incluso en bloques cortos al final de la página. Al restaurar una posición desde el historial, la marca refleja esa posición.
 
-Los cambios por scroll son directos, sin transición visual entre páginas. Las rutas y componentes siguen independientes.
+Solo los cambios por scroll admitido utilizan continuidad vertical: la página actual sube y la siguiente entra pegada debajo; al retroceder ocurre al revés y se muestra el final de la anterior. Se animan capturas del viewport durante 450 ms, con frenado suave, sin fundido y manteniendo rutas/componentes independientes. Header está separado del movimiento; su posición natural puede cambiar al commit debido al margen superior del layout y a su comportamiento sticky. Clics del menú y Atrás/Adelante mantienen navegación directa. Movimiento reducido, API no disponible o captura no viable conservan el destino sin efecto. Mientras aparecen las capturas no se encadenan gestos ni se desplaza el documento. El historial o una navegación ordinaria pueden interrumpir el efecto sin sobrescribir restauración.
 
-Activar un enlace principal enfoca main, incluso al seleccionar de nuevo la página abierta. Las subsecciones de Perfil enfocan su título. Tab recorre enlaces y controles; los textos y títulos no añaden paradas. En las páginas provisionales sin controles dentro de main, Tab puede volver a Inicio al terminar el recorrido.
+Al entrar en Perfil por scroll, su apertura y fundido esperan al final del cambio de página. Al retroceder a Perfil, la reserva inferior móvil adopta su altura final desde el montaje para conservar el final de lectura mientras el índice se abre; las demás entradas conservan su crecimiento habitual. El marcador de entrada de React Router solo decide esa reserva y no activa animación al volver mediante historial. La comprobación visual de capturas y geometría sigue pendiente en navegador.
+
+Los cambios por scroll no enfocan main automáticamente, con o sin animación. Su origen se confirma mediante una clave efímera de navegación, no mediante el estado guardado del historial. Activar un enlace principal enfoca main, incluso al seleccionar de nuevo la página abierta. Las subsecciones de Perfil enfocan su título. Tab recorre enlaces y controles; los textos y títulos no añaden paradas. En las páginas provisionales sin controles dentro de main, Tab puede volver a Inicio al terminar el recorrido.
 
 Los enlaces sin ancla muestran el comienzo de la página; Atrás/Adelante restaura la posición guardada mediante `ScrollRestoration` de React Router. Los gestos conservan sus destinos al principio o final. El teclado cancela su desplazamiento nativo únicamente cuando cambia de página. Se excluyen los controles efectivamente editables y los eventos con desplazamiento vertical cero conservan la distancia acumulada. Una ancla desconocida en Perfil vuelve al comienzo y enfoca el contenido principal; al usar el historial prevalece la posición guardada.
 
-Las pruebas de intención de desplazamiento y de los hooks de navegación utilizan el ejecutor integrado de Node, sin dependencias adicionales. Las pruebas de hooks usan eventos, DOM y efectos simulados, y TypeScript instalado para cargar los módulos. No verifican la restauración de React Router en un navegador ni sustituyen la comprobación de interacción real:
+Las pruebas de intención de desplazamiento, dimensiones de las barras y de los hooks de navegación utilizan el ejecutor integrado de Node, sin dependencias adicionales. Las pruebas de hooks usan eventos, DOM y efectos simulados, y TypeScript instalado para cargar los módulos. No verifican la restauración de React Router en un navegador ni sustituyen la comprobación de interacción real:
 
 ```sh
 node --test tests/*.test.mjs
@@ -58,6 +64,25 @@ node --test tests/*.test.mjs
 
 ## Registro de cambios
 
+- **12/10/2026 · base 0.1.2, apertura de Perfil sin hueco inicial:** main comienza a ancho completo y se estrecha mientras el índice lateral lo empuja. El contenido interior conserva el ancho final de lectura y sus saltos de línea. ESPECIFICACION.md v0.36.
+
+- **11/10/2026 · base 0.1.2, foco por origen de navegación:** los cambios iniciados por scroll dejan de enfocar main automáticamente; clics, historial, anclas y recorrido de Tab conservan su comportamiento. ESPECIFICACION.md v0.35.
+
+- **11/10/2026 · base 0.1.2, continuidad vertical por scroll:** capturas visibles en ambos sentidos, 450 ms, Header separado, ciclo de vida/cancelación aislados y efecto CSS sustituible. Apertura de Perfil posterior y reserva inferior estable al retroceder. Sin dependencias nuevas. ESPECIFICACION.md v0.34.
+
+- **11/10/2026 · base 0.1.2, lectura estable en Perfil:** reservada la anchura final del índice lateral desde el primer render en escritorio para evitar desplazamientos del contenido y cambios de línea durante la apertura. ESPECIFICACION.md v0.33.
+
+- **11/10/2026 · base 0.1.2, apertura desde la posición del índice:** expansión horizontal/vertical en 450 ms y fundido automático de enlaces en 150 ms. Ajustados espacio de lectura, reserva móvil y medición final de anclas. ESPECIFICACION.md v0.32.
+
+- **11/10/2026 · base 0.1.2, entrada más lenta:** duración compartida aumentada a 450 ms. ESPECIFICACION.md v0.31.
+
+- **11/10/2026 · base 0.1.2, entrada animada de Perfil:** efecto deslizante reutilizable en CSS Modules, desde la izquierda o desde abajo según pantalla, 300 ms y movimiento reducido. Espacio reservado y navegación existentes conservados. ESPECIFICACION.md v0.30.
+
+- **11/10/2026 · base 0.1.2, barra superior más delgada:** «Joel / Inicio» en una línea, nombre en tamaño de cuerpo y menor padding vertical de Header y enlaces. ESPECIFICACION.md v0.29.
+
+- **11/10/2026 · base 0.1.2, navegación común superior e índice exclusivo de Perfil:** Header horizontal con Joel/Inicio y las páginas; índice lateral solo en Perfil, fijo abajo en tablet/móvil. Alturas medidas para reservar contenido y compensar anclas en todos los tamaños. ESPECIFICACION.md v0.28.
+
+- **11/10/2026 · base 0.1.2, Inicio separado de las secciones:** «Joel» e «Inicio» forman un único enlace encima de las tres secciones conectadas, con estado activo y foco existentes; se conserva el orden de las cuatro páginas para los gestos. ESPECIFICACION.md v0.27.
 - **10/10/2026 · base 0.1.2, seguimiento de subsecciones:** la marca de Perfil sigue la posición de lectura durante el scroll, conservando el estilo existente, anclas de los clics, historial y foco. ESPECIFICACION.md v0.26.
 - **10/10/2026 · base 0.1.2, foco al reactivar una página:** la navegación principal enfoca main también sin cambio de pathname, conservando el foco de las subsecciones en sus títulos. ESPECIFICACION.md v0.25.
 - **10/10/2026 · base 0.1.2, correcciones de navegación:** restauración para enlaces e historial, teclado sin desplazamiento nativo al cambiar de página, exclusión de edición efectiva, recuperación de anclas desconocidas y conservación de gestos ante desplazamiento vertical cero. ESPECIFICACION.md v0.24.

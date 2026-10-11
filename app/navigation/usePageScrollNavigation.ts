@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router';
 import { navigationItems } from '../navigation';
 import { PageScrollIntent } from './PageScrollIntent';
+import { useScrollPageTransition } from './useScrollPageTransition';
 
 const wheelGesturePause = 200;
 
@@ -40,18 +41,8 @@ function shouldIgnoreTarget(target: EventTarget | null) {
 
 export function usePageScrollNavigation() {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
+  const { navigateFromScroll: navigateFromGesture, scrollLocationKey } = useScrollPageTransition();
   const lastWheelTime = useRef(-Infinity);
-  const pendingPage = useRef<{ pathname: string; edge: 'top' | 'bottom' } | null>(null);
-
-  useLayoutEffect(() => {
-    if (pendingPage.current?.pathname === pathname) {
-      const top = pendingPage.current.edge === 'bottom' ? document.scrollingElement?.scrollHeight ?? 0 : 0;
-      window.scrollTo({ top, left: 0, behavior: 'instant' });
-      pendingPage.current = null;
-    }
-  }, [pathname]);
-
   useEffect(() => {
     const pageIndex = navigationItems.findIndex(({ to }) => to === pathname);
     if (pageIndex < 0) {
@@ -82,10 +73,8 @@ export function usePageScrollNavigation() {
         return false;
       }
 
-      navigating = true;
-      pendingPage.current = { pathname: destination.to, edge: moveForward ? 'top' : 'bottom' };
-      void navigate(destination.to, { preventScrollReset: true });
-      return true;
+      navigating = navigateFromGesture(destination.to, moveForward ? 'forward' : 'backward');
+      return navigating;
     }
 
     function onWheel(event: WheelEvent) {
@@ -161,5 +150,7 @@ export function usePageScrollNavigation() {
       window.removeEventListener('touchcancel', onTouchEnd);
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [pathname, navigate]);
+  }, [pathname, navigateFromGesture]);
+
+  return scrollLocationKey;
 }

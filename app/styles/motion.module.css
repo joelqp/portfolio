@@ -1,0 +1,85 @@
+.slideIn {
+  animation: slideIn var(--duration-panel-entry) var(--easing-panel-entry) backwards;
+}
+
+.fromLeft {
+  --slide-in-x: -100%;
+  --slide-in-y: 0%;
+}
+
+.fromBottom {
+  --slide-in-x: 0%;
+  --slide-in-y: 100%;
+}
+
+.expandInPlace {
+  animation: expandInPlace var(--duration-panel-entry) var(--easing-panel-entry) backwards;
+}
+
+.fadeAfterExpansion {
+  animation: fadeIn var(--duration-interaction) ease var(--duration-panel-entry) backwards;
+}
+
+.reserveBlockSpace {
+  animation: reserveBlockSpace var(--duration-panel-entry) var(--easing-panel-entry) backwards;
+}
+
+/* Keep the incoming index at its first frame until the page snapshots finish. */
+:global(html[data-scroll-transition]) .expandInPlace,
+:global(html[data-scroll-transition]) .reserveBlockSpace,
+:global(html[data-scroll-transition]) .fadeAfterExpansion {
+  animation-play-state: paused;
+}
+
+@keyframes reserveBlockSpace {
+  from {
+    padding-block-end: 0px;
+  }
+
+  to {
+    padding-block-end: var(--reserved-block-space, 0px);
+  }
+}
+
+@keyframes expandInPlace {
+  from {
+    inline-size: var(--expansion-inline-start, auto);
+    block-size: var(--expansion-block-start, auto);
+  }
+
+  to {
+    inline-size: var(--expansion-inline-end, auto);
+    block-size: var(--expansion-block-end, auto);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translate(var(--slide-in-x, 0%), var(--slide-in-y, 0%));
+  }
+
+  to {
+    transform: translate(0%, 0%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slideIn,
+  .expandInPlace,
+  .reserveBlockSpace,
+  .fadeAfterExpansion {
+    animation: none;
+  }
+}

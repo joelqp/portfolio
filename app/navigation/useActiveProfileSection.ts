@@ -2,6 +2,7 @@ import { useEffect, useState, type RefObject } from 'react';
 import { useLocation, useNavigationType } from 'react-router';
 import { getActiveProfileSection } from './getActiveProfileSection';
 import { profileSectionItems } from './profileSections';
+import { getProfileEntryAnimation } from './getProfileEntryAnimation';
 
 type ActiveSection = {
   locationKey: string;
@@ -26,11 +27,13 @@ export function useActiveProfileSection(headerRef: RefObject<HTMLElement | null>
     const anchorId = profileSectionItems.find(({ id }) => hash === `#${id}`)?.id;
     let preserveAnchorSelection = anchorId !== undefined && navigationType !== 'POP';
     let anchorPosition: number | null = null;
+    const entryAnimation = getProfileEntryAnimation();
+    let entering = entryAnimation !== null;
+    let disposed = false;
 
     function updateActiveSection() {
       frame = null;
-      const horizontalHeader = window.matchMedia('(max-width: 60rem)').matches;
-      const headerHeight = horizontalHeader ? headerRef.current?.getBoundingClientRect().height ?? 0 : 0;
+      const headerHeight = headerRef.current?.getBoundingClientRect().height ?? 0;
       const gap = sections.length > 0
         ? parseFloat(window.getComputedStyle(sections[0].element).scrollMarginTop) || 0
         : 0;
@@ -42,7 +45,7 @@ export function useActiveProfileSection(headerRef: RefObject<HTMLElement | null>
       // Short final sections cannot always reach the reading edge.
       const atPageBottom = page !== null && page.scrollTop > 0 &&
         page.scrollHeight - page.scrollTop - page.clientHeight <= 1;
-      if (preserveAnchorSelection) {
+      if (preserveAnchorSelection && !entering) {
         if (anchorPosition === null) {
           anchorPosition = window.scrollY;
         } else if (window.scrollY !== anchorPosition) {
@@ -65,10 +68,20 @@ export function useActiveProfileSection(headerRef: RefObject<HTMLElement | null>
     }
 
     scheduleUpdate();
+    if (entryAnimation) {
+      const finishEntry = () => {
+        if (disposed) return;
+        entering = false;
+        anchorPosition = null;
+        scheduleUpdate();
+      };
+      entryAnimation.finished.then(finishEntry, finishEntry);
+    }
     window.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleUpdate);
 
     return () => {
+      disposed = true;
       if (frame !== null) {
         window.cancelAnimationFrame(frame);
       }

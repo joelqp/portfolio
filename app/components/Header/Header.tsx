@@ -1,24 +1,29 @@
-import { useRef } from 'react';
-import { NavLink, useLocation } from 'react-router';
+import type { RefObject } from 'react';
+import { NavLink } from 'react-router';
 import { navigationItems } from '../../navigation';
-import { useProfileSectionNavigation } from '../../navigation/useProfileSectionNavigation';
-import { useActiveProfileSection } from '../../navigation/useActiveProfileSection';
-import { ProfileSubnavigation } from '../ProfileSubnavigation/ProfileSubnavigation';
 import styles from './Header.module.css';
 
-export function Header() {
-  const { pathname } = useLocation();
-  const isProfilePage = pathname === '/profile';
-  const headerRef = useRef<HTMLElement>(null);
-  useProfileSectionNavigation(headerRef);
-  const activeSectionId = useActiveProfileSection(headerRef);
+const [homeDestination, ...sectionDestinations] = navigationItems;
 
+export function Header({ headerRef }: { headerRef: RefObject<HTMLElement | null> }) {
   return (
     <header ref={headerRef} className={styles.header}>
       <div className={styles.inner}>
         <nav aria-label="Navegación principal">
+          <NavLink
+            to={homeDestination.to}
+            aria-label={`Joel / ${homeDestination.label}`}
+            end
+            className={({ isActive }) =>
+              `${styles.brandLink} ${isActive ? styles.active : ''}`
+            }
+          >
+            <span className={styles.brandName}>Joel</span>
+            <span aria-hidden="true">/</span>
+            <span className={styles.homeLabel}>{homeDestination.label}</span>
+          </NavLink>
           <ul className={styles.navigation}>
-            {navigationItems.map(({ to, label }) => (
+            {sectionDestinations.map(({ to, label }) => (
               <li key={to} className={styles.destination}>
                 <NavLink
                   to={to}
@@ -27,12 +32,8 @@ export function Header() {
                     `${styles.link} ${isActive ? styles.active : ''}`
                   }
                 >
-                  <span className={styles.node} aria-hidden="true" />
                   <span className={styles.label}>{label}</span>
                 </NavLink>
-                {to === '/profile' && isProfilePage && (
-                  <ProfileSubnavigation activeSectionId={activeSectionId} />
-                )}
               </li>
             ))}
           </ul>

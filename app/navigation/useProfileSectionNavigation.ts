@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { useLocation, useNavigationType } from 'react-router';
+import { getProfileEntryAnimation } from './getProfileEntryAnimation';
 
 export function useProfileSectionNavigation(headerRef: RefObject<HTMLElement | null>) {
   const { pathname, hash, key } = useLocation();
@@ -22,22 +23,35 @@ export function useProfileSectionNavigation(headerRef: RefObject<HTMLElement | n
     }
 
     const section = document.getElementById(hash.slice(1));
-    const frame = window.requestAnimationFrame(() => {
+    let cancelled = false;
+    function moveToSection() {
+      if (cancelled) return;
       if (!section || !section.closest('main')) {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
         return;
       }
 
-      const horizontalHeader = window.matchMedia('(max-width: 60rem)').matches;
-      const headerHeight = horizontalHeader ? headerRef.current?.getBoundingClientRect().height ?? 0 : 0;
+      const headerHeight = headerRef.current?.getBoundingClientRect().height ?? 0;
       const gap = parseFloat(window.getComputedStyle(section).scrollMarginTop) || 0;
       const top = window.scrollY + section.getBoundingClientRect().top - headerHeight - gap;
 
       window.scrollTo({ top: Math.max(0, top), behavior: 'instant' });
       section.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      const entryAnimation = getProfileEntryAnimation();
+      if (entryAnimation) {
+        entryAnimation.finished.then(moveToSection, moveToSection);
+      } else {
+        moveToSection();
+      }
     });
 
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(frame);
+    };
   }, [pathname, hash, key, navigationType, headerRef]);
 }

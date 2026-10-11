@@ -2,7 +2,9 @@
   --navigation-width: 17rem;
 
   display: grid;
-  grid-template-columns: var(--navigation-width) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas: "header" "main";
   align-items: stretch;
   gap: 0;
   width: calc(100% - var(--space-5) - var(--space-5));
@@ -12,14 +14,50 @@
   isolation: isolate;
 }
 
+.profileLayout {
+  container-type: inline-size;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "header header" "profile main";
+}
+
+.profileSidebar {
+  composes: expandInPlace from '../../styles/motion.module.css';
+  --expansion-inline-start: 0px;
+  --expansion-inline-end: var(--navigation-width);
+
+  grid-area: profile;
+  inline-size: var(--navigation-width);
+  min-width: 0;
+  overflow: clip;
+  background: var(--color-brand);
+}
+
 .main {
+  grid-area: main;
   min-width: 0;
   border-radius: var(--radius-card);
   background: var(--color-surface);
 }
 
+.profileMain {
+  composes: reserveBlockSpace from '../../styles/motion.module.css';
+  --reserved-block-space: 0px;
+
+  padding-block-end: var(--reserved-block-space);
+}
+
+/* A backward entry must retain the final scroll edge while the mobile index opens. */
+.bottomEntry {
+  animation: none;
+}
+
 .content {
   padding: var(--space-6);
+}
+
+.profileMain .content {
+  /* Keep the final reading width while the sidebar pushes main to the right. */
+  inline-size: calc(100cqw - var(--navigation-width));
 }
 
 .skipLink {
@@ -40,9 +78,32 @@
 }
 
 @media (max-width: 60rem) {
-  .layout {
+  .profileLayout {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
+    grid-template-areas: "header" "main";
+  }
+
+  .profileSidebar {
+    --expansion-inline-start: auto;
+    --expansion-inline-end: auto;
+    --expansion-block-start: 0px;
+    --expansion-block-end: var(--profile-navigation-height, calc(var(--control-height) + var(--space-7) + var(--space-6) + env(safe-area-inset-bottom)));
+
+    inline-size: auto;
+    block-size: var(--expansion-block-end);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+  }
+
+  .profileMain {
+    --reserved-block-space: var(--profile-navigation-height, calc(var(--control-height) + var(--space-7) + var(--space-6) + env(safe-area-inset-bottom)));
+  }
+
+  .profileMain .content {
+    inline-size: auto;
   }
 }
 
