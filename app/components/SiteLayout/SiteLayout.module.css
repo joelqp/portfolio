@@ -1,3 +1,15 @@
+.frame {
+  view-transition-name: site-page;
+  position: fixed;
+  inset: var(--page-frame-space);
+  max-width: var(--content-width);
+  margin-inline: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--color-paper);
+  border-radius: 0 0 var(--paper-corner-width) var(--paper-corner-width) / 0 0 var(--paper-corner-height) var(--paper-corner-height);
+}
+
 .layout {
   --navigation-width: 17rem;
 
@@ -7,11 +19,11 @@
   grid-template-areas: "header" "main";
   align-items: stretch;
   gap: 0;
-  width: calc(100% - var(--space-5) - var(--space-5));
-  max-width: var(--content-width);
-  min-height: calc(100svh - var(--space-5) - var(--space-5));
-  margin: var(--space-5) auto;
-  isolation: isolate;
+  width: 100%;
+  min-height: 100%;
+  position: relative;
+  background: var(--color-paper);
+  border-radius: inherit;
 }
 
 .profileLayout {
@@ -30,19 +42,22 @@
   min-width: 0;
   overflow: clip;
   background: var(--color-brand);
+  border-end-start-radius: var(--paper-corner-width) var(--paper-corner-height);
 }
 
 .main {
   grid-area: main;
   min-width: 0;
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
+  background: var(--color-paper);
 }
 
 .profileMain {
   composes: reserveBlockSpace from '../../styles/motion.module.css';
   --reserved-block-space: 0px;
 
+  border-end-start-radius: 0;
   padding-block-end: var(--reserved-block-space);
 }
 
@@ -84,6 +99,7 @@
   }
 
   .profileSidebar {
+    border-end-start-radius: 0;
     --expansion-inline-start: auto;
     --expansion-inline-end: auto;
     --expansion-block-start: 0px;
@@ -92,13 +108,14 @@
     inline-size: auto;
     block-size: var(--expansion-block-end);
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: var(--page-frame-space);
+    left: var(--page-frame-space);
+    right: var(--page-frame-space);
     z-index: 2;
   }
 
   .profileMain {
+    border-end-start-radius: inherit;
     --reserved-block-space: var(--profile-navigation-height, calc(var(--control-height) + var(--space-7) + var(--space-6) + env(safe-area-inset-bottom)));
   }
 

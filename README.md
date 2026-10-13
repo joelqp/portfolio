@@ -1,21 +1,25 @@
 # Portfolio · 0.1.2
 
-Las rutas `/`, `/profile`, `/build` y `/contact` comparten una barra superior horizontal y un panel de lectura. «Joel / Inicio» en una sola línea forma un único enlace a `/`, a la izquierda de Perfil profesional, Cómo lo construí y Contacto. La página activa se distingue por su estilo y `aria-current`. Solo Perfil dispone de un índice lateral en escritorio; en tablet/móvil ese índice queda fijo en el borde inferior. Las demás páginas no tienen columna lateral. El panel muestra textos provisionales identificados, sin encabezado compartido ni numeración. Perfil incluye reservas para las demos de CaixaBank Tech, ALTIA y AIA; ninguna está implementada. La estructura completa y las rutas bilingües del Sprint 1 siguen pendientes.
+Las rutas `/`, `/profile`, `/build` y `/contact` comparten una barra superior horizontal y un panel de lectura. «Joel / Inicio» en una sola línea forma un único enlace a `/`, a la izquierda de Perfil profesional, Cómo lo construí y Contacto. La página activa se distingue por su estilo y `aria-current`. Solo Perfil dispone de un índice lateral en escritorio; en tablet/móvil ese índice queda fijo en el borde inferior. Las demás páginas no tienen columna lateral. Inicio muestra identidad, About, invitación y un acceso a Perfil en cuatro zonas; las otras páginas mantienen textos provisionales identificados. No hay encabezado compartido ni numeración. Perfil incluye reservas para las demos de CaixaBank Tech, ALTIA y AIA; ninguna está implementada. La estructura completa y las rutas bilingües del Sprint 1 siguen pendientes.
 
-Base visual: verde Sacramento (`#043927`) y tonos verdes derivados, con esquinas rectas. Header y panel principal se unen sin separación, bordes exteriores ni sombras; el encabezado del panel no tiene línea divisoria. Los componentes conservan sus estilos de relieve. Los estilos del prototipo no se utilizan como referencia visual.
+El marco compartido está fijo y deja 24 px de espacio exterior, reducido a 12 px hasta 40 rem, con fuente base de 16 px. El contenido se desplaza dentro del marco y queda recortado en sus límites; el documento no se desplaza. El token `--page-frame-space` controla esa separación; Header y el índice fijo de Perfil respetan el espacio correspondiente.
+
+Base visual: verde Sacramento (`#043927`) y tonos verdes derivados, con esquinas rectas. Header y panel principal se unen sin separación ni bordes exteriores. El layout completo conserva la curvatura de hoja en las esquinas inferiores; el encabezado del panel no tiene línea divisoria. El código de la aplicación y del prototipo no incorpora efectos de sombra; componentes y navegación conservan sus bordes y estados de foco. Los estilos del prototipo no se utilizan como referencia visual.
 
 ## Organización
 
 - `app/root.tsx`: documento HTML, estilos globales y conexión del layout a las rutas.
 - `app/navigation.ts`: destinos y nombres de la navegación.
+- `app/navigation/pageScroll.ts`: acceso al contenedor de scroll compartido. `usePageScrollRestoration.ts`: restauración por entrada de historial y recarga, con memoria y sessionStorage cuando está disponible.
 - `app/navigation/`: detección de gestos en los límites (`PageScrollIntent` y `usePageScrollNavigation`), coordinación de destino/cancelación (`ScrollPageTransition`) y adaptación a React Router/View Transition (`useScrollPageTransition`).
 - `app/components/SiteLayout/` y `Header/`: marco común y navbar, definido una sola vez.
 - `app/components/PageContent/`, `ContentSection/` y `DemoPlaceholder/`: introducción provisional, secciones con anclas y reservas de demos.
 - `app/components/ProfileSubnavigation/`: índice específico de las cinco subsecciones de Perfil, lateral en escritorio y fijo abajo en tablet/móvil; seguimiento de sección activa.
+- `app/content/homeContent.ts`: textos de Inicio. `app/routes/HomePage.module.css`: áreas y alineaciones editables, con cuadrícula desigual 2×2 y una columna hasta 40 rem. Las proporciones y tamaños propios están en los tokens `--home-*`.
 - `app/content/placeholderContent.ts`: textos de relleno y descripciones de las futuras demos, separados de la presentación.
 - `app/components/Button/`, `Card/`, `Badge/`, `TextField/`, `Checkbox/` y `Switch/`: componentes básicos reutilizables, con CSS Modules propios. Card y Badge se utilizan en el contenido provisional y las reservas.
 - `app/styles/motion.module.css`: efectos reutilizables: `slideIn` con `fromLeft`/`fromBottom`, `expandInPlace`, `reserveBlockSpace` y `fadeAfterExpansion`. Perfil compone apertura y fundido; las variables `--expansion-inline-start/end`, `--expansion-block-start/end` y `--reserved-block-space` definen los tamaños. Duraciones y curva están en tokens; movimiento reducido muestra directamente el resultado.
-- `app/styles/pageTransition.module.css`: efecto de continuidad vertical por scroll; captura el viewport, recorta cada superficie bajo Header y desplaza ambas la misma distancia. El efecto se puede sustituir sin modificar detección ni coordinación.
+- `app/styles/pageTransition.module.css`: efecto de hojas grapadas por scroll; captura el marco fijo por nombre (`site-page`) y gira una hoja bajo Header, separado en `site-header`. El fondo raíz permanece inmóvil. El navegador gestiona tamaño y posición de las capturas. El efecto se puede sustituir sin modificar detección ni coordinación.
 - `app/styles/tokens.css`: colores, tipografía, espacios y relieve compartidos. `globals.css`: reglas generales. `utilities.css`: contenedor común.
 - `app/routes/`: páginas `HomePage.tsx`, `ProfilePage.tsx`, `BuildPage.tsx` y `ContactPage.tsx`; archivos y componentes de página utilizan el sufijo `Page`. Sus URLs son `/`, `/profile`, `/build` y `/contact`.
 
@@ -23,7 +27,7 @@ Button, Checkbox y Switch utilizan Base UI **1.9.0**. Card, Badge y TextField ut
 
 Para cambiar la paleta, editar los valores de `tokens.css`. Para cambiar un componente, editar su archivo y su CSS Module. Los componentes aceptan las propiedades de sus elementos o de Base UI; Button ofrece `primary`, `secondary` y `ghost`, y Card ofrece `raised` y `outlined`.
 
-Las variables específicas están en los CSS Modules: ancho del índice lateral en `SiteLayout`, nodos y conexiones en `ProfileSubnavigation` y disposición horizontal en `Header`. Los tokens globales quedan agrupados por función. Header permanece arriba durante el scroll en todos los tamaños. La marca usa el tamaño de cuerpo con Inicio en tamaño pequeño, ambos en una sola línea; el padding vertical de Header y enlaces se reduce a `--space-1`, manteniendo la altura mínima de control; los tres enlaces de página aparecen a su derecha sin nodos ni conexiones. Solo el índice de Perfil mantiene cinco destinos conectados, verticales en escritorio y en cinco columnas abajo hasta 60 rem. Las etiquetas completas pueden ocupar varias líneas sin desplazamiento horizontal. `useNavigationDimensions` mide las barras con ResizeObserver para situar el índice bajo Header y reservar espacio inferior en Perfil.
+Las variables específicas están en los CSS Modules: ancho del índice lateral en `SiteLayout`, nodos y conexiones en `ProfileSubnavigation` y disposición horizontal en `Header`. Los tokens globales quedan agrupados por función. Header permanece arriba durante el scroll en todos los tamaños, separado del borde por `--page-frame-space`. La marca usa el tamaño de cuerpo con Inicio en tamaño pequeño, ambos en una sola línea; el padding vertical de Header y enlaces se reduce a `--space-1`, manteniendo la altura mínima de control; los tres enlaces de página aparecen a su derecha sin nodos ni conexiones. Solo el índice de Perfil mantiene cinco destinos conectados, verticales en escritorio y en cinco columnas abajo hasta 60 rem. Las etiquetas completas pueden ocupar varias líneas sin desplazamiento horizontal. `useNavigationDimensions` mide las barras con ResizeObserver para situar el índice bajo Header y reservar espacio inferior en Perfil.
 
 ## Ejecución
 
@@ -48,21 +52,61 @@ Al entrar en Perfil, el espacio del índice se abre desde su propia posición du
 
 La subsección marcada sigue el scroll cuando su título alcanza el borde superior de lectura, considerando el margen de ancla. Antes de la primera sección no hay marca; al final se marca Tecnologías aunque su bloque no pueda llegar hasta ese borde. El seguimiento actualiza solo la marca, sin cambiar URL, historial o foco; los clics conservan sus anclas y el foco en el título. La marca de un clic se conserva hasta cambiar la posición de scroll, incluso en bloques cortos al final de la página. Al restaurar una posición desde el historial, la marca refleja esa posición.
 
-Solo los cambios por scroll admitido utilizan continuidad vertical: la página actual sube y la siguiente entra pegada debajo; al retroceder ocurre al revés y se muestra el final de la anterior. Se animan capturas del viewport durante 450 ms, con frenado suave, sin fundido y manteniendo rutas/componentes independientes. Header está separado del movimiento; su posición natural puede cambiar al commit debido al margen superior del layout y a su comportamiento sticky. Clics del menú y Atrás/Adelante mantienen navegación directa. Movimiento reducido, API no disponible o captura no viable conservan el destino sin efecto. Mientras aparecen las capturas no se encadenan gestos ni se desplaza el documento. El historial o una navegación ordinaria pueden interrumpir el efecto sin sobrescribir restauración.
+Los cambios por scroll admitido utilizan un efecto de hojas grapadas en la esquina superior izquierda bajo Header. El navegador captura directamente el marco fijo mediante `view-transition-name: site-page`, a su tamaño y posición reales, mientras Header se captura por separado y el fondo permanece inmóvil. Al avanzar, la esquina inferior derecha se levanta en profundidad hacia la superior izquierda y descubre el destino; al retroceder, la anterior vuelve sobre la actual y muestra su final de lectura. El giro dura 900 ms, sin fundido. El eje se calcula con el marco completo y la altura visible bajo Header, sin reutilizar el ancho del contenido de Perfil. Se conservan los recortes superiores independientes de ambas hojas; se han eliminado las coordenadas y conversiones manuales de capturas de viewport. Ángulo y perspectiva siguen en tokens. Todas las rutas utilizan el mismo mecanismo, sin detección por navegador ni excepciones por página. Clics del menú e historial mantienen navegación directa; movimiento reducido, API no disponible o captura fallida conservan el destino sin giro. Durante la transición no se encadenan gestos y una navegación ordinaria puede cancelarla.
 
 Al entrar en Perfil por scroll, su apertura y fundido esperan al final del cambio de página. Al retroceder a Perfil, la reserva inferior móvil adopta su altura final desde el montaje para conservar el final de lectura mientras el índice se abre; las demás entradas conservan su crecimiento habitual. El marcador de entrada de React Router solo decide esa reserva y no activa animación al volver mediante historial. La comprobación visual de capturas y geometría sigue pendiente en navegador.
 
 Los cambios por scroll no enfocan main automáticamente, con o sin animación. Su origen se confirma mediante una clave efímera de navegación, no mediante el estado guardado del historial. Activar un enlace principal enfoca main, incluso al seleccionar de nuevo la página abierta. Las subsecciones de Perfil enfocan su título. Tab recorre enlaces y controles; los textos y títulos no añaden paradas. En las páginas provisionales sin controles dentro de main, Tab puede volver a Inicio al terminar el recorrido.
 
-Los enlaces sin ancla muestran el comienzo de la página; Atrás/Adelante restaura la posición guardada mediante `ScrollRestoration` de React Router. Los gestos conservan sus destinos al principio o final. El teclado cancela su desplazamiento nativo únicamente cuando cambia de página. Se excluyen los controles efectivamente editables y los eventos con desplazamiento vertical cero conservan la distancia acumulada. Una ancla desconocida en Perfil vuelve al comienzo y enfoca el contenido principal; al usar el historial prevalece la posición guardada.
+Los enlaces sin ancla muestran el comienzo del marco; Atrás/Adelante restaura la posición por clave de entrada mediante `usePageScrollRestoration`. Las posiciones se guardan en memoria y sessionStorage si está disponible, también para la recarga. La restauración considera el final de apertura del índice y se cancela al cambiar de entrada o si el visitante se desplaza antes. Los gestos conservan sus destinos al principio o final. El teclado cancela su desplazamiento nativo cuando cambia de página o debe desplazar el marco con el foco fuera de él. Con foco dentro del marco se conserva el scroll nativo. Se excluyen los controles efectivamente editables y los eventos con desplazamiento vertical cero conservan la distancia acumulada. Una ancla desconocida en Perfil vuelve al comienzo y enfoca el contenido principal; al usar el historial prevalece la posición guardada.
 
-Las pruebas de intención de desplazamiento, dimensiones de las barras y de los hooks de navegación utilizan el ejecutor integrado de Node, sin dependencias adicionales. Las pruebas de hooks usan eventos, DOM y efectos simulados, y TypeScript instalado para cargar los módulos. No verifican la restauración de React Router en un navegador ni sustituyen la comprobación de interacción real:
+Las pruebas de intención de desplazamiento, dimensiones de las barras, restauración del marco y de los hooks de navegación utilizan el ejecutor integrado de Node, sin dependencias adicionales. Las pruebas de hooks usan eventos, DOM y efectos simulados, y TypeScript instalado para cargar los módulos. No verifican la restauración del contenedor en un navegador ni sustituyen la comprobación de interacción real:
 
 ```sh
 node --test tests/*.test.mjs
 ```
 
 ## Registro de cambios
+
+- **13/10/2026 · base 0.1.2, captura directa del marco:** transición mediante `site-page`, con dimensiones nativas y Header independiente. Eliminada la conversión manual de viewport a hoja; algoritmo común sin condiciones por navegador. ESPECIFICACION.md v0.56.
+
+- **13/10/2026 · base 0.1.2, captura a tamaño de viewport:** recorte mediante clip-path sin reducir la caja de la imagen; giro alrededor de la esquina de la hoja dentro de la captura. ESPECIFICACION.md v0.55.
+
+- **13/10/2026 · base 0.1.2, geometría independiente por captura:** el destino usa sus propias medidas y el giro las de la hoja en movimiento. Corregida la reutilización de recortes de origen, sin excepciones para Inicio ni esperas temporizadas. ESPECIFICACION.md v0.54.
+
+- **13/10/2026 · base 0.1.2, marco fijo:** scroll dentro del marco, con márgenes visibles durante todo el desplazamiento. Gestos, anclas, seguimiento, historial/recarga y giro adaptados al contenedor. ESPECIFICACION.md v0.53.
+
+- **13/10/2026 · base 0.1.2, espacio exterior:** 24 px en escritorio y 12 px hasta 40 rem; layout, navegación fija, Inicio, anclas de Perfil y giro adaptados. ESPECIFICACION.md v0.52.
+
+- **13/10/2026 · base 0.1.2, sin sombras:** retiradas sombras y sombreados decorativos del código de aplicación y prototipo, incluidos sus tokens. Bordes, foco y giro 3D conservados. ESPECIFICACION.md v0.51.
+
+- **13/10/2026 · base 0.1.2, sombra de navegación durante el giro:** la capa independiente de Header reutiliza `--shadow-paper`, con recorte inferior para conservar la unión con el contenido. ESPECIFICACION.md v0.50.
+
+- **13/10/2026 · base 0.1.2, sombra durante el giro:** las capturas reutilizan `--shadow-paper` desde el inicio de la transición; el recorte de imagen conserva la sombra exterior. ESPECIFICACION.md v0.49.
+
+- **13/10/2026 · base 0.1.2, sombra de papel más intensa:** aumentadas extensión y opacidad de la sombra exterior y reforzados laterales y esquinas inferiores. ESPECIFICACION.md v0.48.
+
+- **13/10/2026 · base 0.1.2, giro más lento:** duración de la transición de hojas duplicada a 900 ms. ESPECIFICACION.md v0.47.
+
+- **13/10/2026 · base 0.1.2, elevación diagonal:** esquina inferior derecha levantada en profundidad hacia la superior izquierda, con eje calculado según el tamaño visible y giro inverso al retroceder. ESPECIFICACION.md v0.46.
+
+- **13/10/2026 · base 0.1.2, hojas en 3D:** giro sobre los ejes Z e Y con perspectiva, esquina superior izquierda fija y reverso oculto. Ángulos y perspectiva configurables en tokens. ESPECIFICACION.md v0.45.
+
+- **13/10/2026 · base 0.1.2, giro de hojas grapadas:** sustituido el deslizamiento por giro alrededor de la esquina superior izquierda bajo Header, en ambos sentidos. Restaurado Inicio → Perfil; geometría medida y efecto aislado en CSS. ESPECIFICACION.md v0.44.
+
+- **13/10/2026 · base 0.1.2, Inicio → Perfil sin transición:** navegación directa solo en ese sentido; regreso, demás transiciones y apertura del índice conservados. ESPECIFICACION.md v0.43.
+
+- **13/10/2026 · base 0.1.2, relieve de hoja:** efecto aplicado al layout completo, con sombras suaves y esquinas inferiores curvadas; navegación y márgenes conservados. ESPECIFICACION.md v0.42.
+
+- **13/10/2026 · base 0.1.2, fondo de papel:** main utiliza el blanco cálido `#FAF9F6`, centralizado en `--color-paper`. ESPECIFICACION.md v0.41.
+
+- **13/10/2026 · base 0.1.2, About arriba:** alineado a la parte superior de su contenedor, conservando el centrado horizontal. ESPECIFICACION.md v0.40.
+
+- **13/10/2026 · base 0.1.2, Inicio en cuatro zonas:** identidad, About, invitación y enlace grande a Perfil; composición desigual 2×2 y una columna en móvil. Posiciones configurables en CSS y contenido separado. ESPECIFICACION.md v0.39.
+
+- **12/10/2026 · base 0.1.2, sin margen exterior fijo:** retirados los 24 px exteriores con fuente base de 16 px en todas las páginas. Ancho disponible hasta 85 rem, centrado horizontal y altura mínima de `100svh`. ESPECIFICACION.md v0.38.
+
+- **12/10/2026 · base 0.1.2, marco más ancho:** ancho máximo compartido aumentado de 75 rem a 85 rem, conservando márgenes y navegación. ESPECIFICACION.md v0.37; valoración visual pendiente.
 
 - **12/10/2026 · base 0.1.2, apertura de Perfil sin hueco inicial:** main comienza a ancho completo y se estrecha mientras el índice lateral lo empuja. El contenido interior conserva el ancho final de lectura y sus saltos de línea. ESPECIFICACION.md v0.36.
 

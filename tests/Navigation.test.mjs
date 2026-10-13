@@ -22,6 +22,39 @@ function createCapture() {
   };
 }
 
+for (const [label, geometry] of [
+  ['centered desktop layout', { viewportWidth: 1600, headerLeft: 120, headerRight: 1480, headerHeight: 56, headerTop: 24 }],
+  ['mobile layout with outer spacing', { viewportWidth: 390, headerLeft: 12, headerRight: 378, headerHeight: 88, headerTop: 12 }],
+]) {
+  test(`page turn uses the sheet corner and clears geometry for ${label}`, async () => {
+    const capture = createCapture();
+    const harness = createNavigationHarness('usePageScrollNavigation', {
+      ...geometry, location: { pathname: '/' }, startViewTransition: capture.startViewTransition,
+    });
+    harness.render();
+    harness.dispatch('keydown', { key: 'PageDown' });
+    const properties = harness.document.documentElement.style.properties;
+    assert.equal(properties.get('--page-transition-header-height'), `${geometry.headerHeight}px`);
+    const width = geometry.headerRight - geometry.headerLeft;
+    const height = 500 - geometry.headerHeight - 2 * geometry.headerTop;
+    const axisX = Number(properties.get('--page-turn-axis-x'));
+    const axisY = Number(properties.get('--page-turn-axis-y'));
+    assert.ok(Math.abs(axisX * width + axisY * height) < 1e-9,
+      'The corner diagonal must be perpendicular to the rotation axis');
+    const liftedCorner = axisX * height - axisY * width;
+    assert.ok(liftedCorner > 0, 'The lower-right corner must lift toward the viewer');
+    assert.ok(parseFloat(properties.get('--page-turn-min-perspective')) > liftedCorner,
+      'The lifted sheet must remain in front of the perspective camera');
+    const updated = capture.update();
+    harness.render({ pathname: '/profile', key: 'profile' }, 'PUSH');
+    await updated;
+    await capture.finish();
+    assert.equal(properties.size, 0);
+    assert.equal(harness.document.documentElement.hasAttribute('data-scroll-transition'), false);
+    harness.dispose();
+  });
+}
+
 test('scroll captures the destination at its edge and delays index entry until finished', async () => {
   const capture = createCapture();
   const harness = createNavigationHarness('usePageScrollNavigation', {
@@ -46,6 +79,67 @@ test('scroll captures the destination at its edge and delays index entry until f
   harness.dispose();
 });
 
+test('the rotation uses the bounded frame width rather than a narrower content width', async () => {
+  const capture = createCapture();
+  const options = {
+    location: { pathname: '/profile' }, page: { scrollTop: 0 },
+    viewportWidth: 1600, headerTop: 24, headerHeight: 56,
+    frameLeft: 120, frameRight: 1480,
+    headerLeft: 392, headerRight: 1465,
+    startViewTransition: capture.startViewTransition,
+  };
+  const harness = createNavigationHarness('usePageScrollNavigation', options);
+  harness.render();
+  harness.dispatch('keydown', { key: 'PageUp' });
+  const updated = capture.update();
+  harness.render({ pathname: '/', key: 'home' }, 'PUSH');
+  await updated;
+  const properties = harness.document.documentElement.style.properties;
+  const axisX = Number(properties.get('--page-turn-axis-x'));
+  const axisY = Number(properties.get('--page-turn-axis-y'));
+  assert.ok(Math.abs(axisX * 1360 + axisY * 396) < 1e-9);
+  assert.equal(properties.get('--page-new-header-height'), '56px');
+  await capture.finish();
+  assert.equal(properties.size, 0);
+  harness.dispose();
+});
+
+for (const direction of ['forward', 'backward']) {
+  test(`${direction} keeps each snapshot's geometry when the destination has a different width`, async () => {
+    const capture = createCapture();
+    const options = {
+      location: { pathname: direction === 'backward' ? '/profile' : '/' },
+      page: { scrollTop: direction === 'backward' ? 0 : 500 },
+      viewportWidth: 1600, headerTop: 24, headerHeight: 72,
+      headerLeft: 120, headerRight: 1465,
+      startViewTransition: capture.startViewTransition,
+    };
+    const harness = createNavigationHarness('usePageScrollNavigation', options);
+    harness.render();
+    harness.dispatch('keydown', { key: direction === 'backward' ? 'PageUp' : 'PageDown' });
+    const updated = capture.update();
+    options.headerRight = 1480;
+    options.headerHeight = 56;
+    const destination = direction === 'backward' ? '/' : '/profile';
+    harness.render({ pathname: destination, key: 'destination' }, 'PUSH');
+    await updated;
+
+    const properties = harness.document.documentElement.style.properties;
+    assert.equal(properties.get('--page-transition-header-height'), '56px', 'The frame must use the destination header');
+    assert.equal(properties.get('--page-old-header-height'), '72px', 'The old snapshot keeps its header crop');
+    assert.equal(properties.get('--page-new-header-height'), '56px', 'The new snapshot fits the destination header');
+    const rotatingWidth = direction === 'backward' ? 1360 : 1345;
+    const rotatingHeight = direction === 'backward' ? 396 : 380;
+    const axisX = Number(properties.get('--page-turn-axis-x'));
+    const axisY = Number(properties.get('--page-turn-axis-y'));
+    assert.ok(Math.abs(axisX * rotatingWidth + axisY * rotatingHeight) < 1e-9,
+      'The moving sheet must use its own rotation axis');
+    await capture.finish();
+    assert.equal(properties.size, 0, 'Finishing must clear geometry for both snapshots');
+    harness.dispose();
+  });
+}
+
 test('history interrupts the snapshot without overriding its restored position', async () => {
   const capture = createCapture();
   const harness = createNavigationHarness('usePageScrollNavigation', { startViewTransition: capture.startViewTransition });
@@ -60,6 +154,7 @@ test('history interrupts the snapshot without overriding its restored position',
   assert.equal(harness.page.scrollTop, 250);
   assert.equal(harness.scrollCalls.length, 0);
   assert.equal(harness.document.documentElement.hasAttribute('data-scroll-transition'), false);
+  assert.equal(harness.document.documentElement.style.properties.size, 0);
   harness.dispose();
 });
 
@@ -208,10 +303,10 @@ test('editable targets are excluded from keyboard, wheel and touch navigation', 
   const harness = createNavigationHarness('usePageScrollNavigation');
   harness.body.isContentEditable = true;
   harness.render();
-  const event = harness.dispatch('keydown', { key: 'PageDown' });
-  harness.dispatch('wheel', { timeStamp: 1000, deltaY: 120, deltaMode: 0 });
-  harness.dispatch('touchstart', { touches: [{ clientY: 200 }] });
-  harness.dispatch('touchmove', { touches: [{ clientY: 80 }] });
+  const event = harness.dispatch('keydown', { key: 'PageDown', target: harness.body });
+  harness.dispatch('wheel', { timeStamp: 1000, deltaY: 120, deltaMode: 0, target: harness.body });
+  harness.dispatch('touchstart', { touches: [{ clientY: 200 }], target: harness.body });
+  harness.dispatch('touchmove', { touches: [{ clientY: 80 }], target: harness.body });
   assert.equal(event.defaultPrevented, false);
   assert.equal(harness.navigations.length, 0);
   harness.dispose();
@@ -264,6 +359,31 @@ test('the scroll gesture hook leaves ordinary route changes to router restoratio
   harness.dispose();
 });
 
+test('page navigation reads frame limits rather than document limits', () => {
+  const harness = createNavigationHarness('usePageScrollNavigation', {
+    page: { scrollTop: 250 },
+    documentPage: { scrollTop: 0, scrollHeight: 500, clientHeight: 500 },
+  });
+  harness.render();
+  harness.dispatch('keydown', { key: 'PageDown' });
+  assert.equal(harness.navigations.length, 0);
+  harness.page.scrollTop = 500;
+  harness.dispatch('keydown', { key: 'PageDown' });
+  assert.equal(harness.navigations[0].pathname, '/build');
+  harness.dispose();
+});
+
+test('keyboard scrolling moves the frame when focus is outside it', () => {
+  const harness = createNavigationHarness('usePageScrollNavigation', { page: { scrollTop: 0 } });
+  harness.render();
+  const event = harness.dispatch('keydown', { key: 'PageDown', target: harness.body });
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(harness.page.scrollTop, 450);
+  assert.equal(harness.document.scrollingElement.scrollTop, 0);
+  assert.equal(harness.navigations.length, 0);
+  harness.dispose();
+});
+
 test('an unknown profile anchor returns to the top and focuses the main content', () => {
   const harness = createNavigationHarness('useProfileSectionNavigation', { location: { hash: '#unknown' } });
   harness.render();
@@ -294,6 +414,18 @@ test('a desktop profile anchor also clears the shared top navigation', () => {
   harness.render();
   harness.flushFrames();
   assert.equal(harness.page.scrollTop, 556);
+  assert.equal(harness.focusCalls[0].element, harness.heading);
+  harness.dispose();
+});
+
+test('profile anchors clear both the header and its outer spacing', () => {
+  const harness = createNavigationHarness('useProfileSectionNavigation', {
+    location: { hash: '#caixa' }, headerHeight: 120, headerTop: 24,
+    page: { scrollHeight: 2000 },
+  });
+  harness.render();
+  harness.flushFrames();
+  assert.equal(harness.page.scrollTop, 532);
   assert.equal(harness.focusCalls[0].element, harness.heading);
   harness.dispose();
 });

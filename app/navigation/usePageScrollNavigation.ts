@@ -3,16 +3,17 @@ import { useLocation } from 'react-router';
 import { navigationItems } from '../navigation';
 import { PageScrollIntent } from './PageScrollIntent';
 import { useScrollPageTransition } from './useScrollPageTransition';
+import { getPageScrollElement, scrollPageTo } from './pageScroll';
 
 const wheelGesturePause = 200;
 
 function isAtPageTop() {
-  const page = document.scrollingElement;
+  const page = getPageScrollElement();
   return page !== null && page.scrollTop <= 1;
 }
 
 function isAtPageBottom() {
-  const page = document.scrollingElement;
+  const page = getPageScrollElement();
   return page !== null && page.scrollHeight - page.scrollTop - page.clientHeight <= 1;
 }
 
@@ -26,6 +27,7 @@ function shouldIgnoreTarget(target: EventTarget | null) {
   }
 
   for (let element: HTMLElement | null = target; element; element = element.parentElement) {
+    if (element === getPageScrollElement()) break;
     if (element === document.body || element === document.documentElement) {
       break;
     }
@@ -37,6 +39,29 @@ function shouldIgnoreTarget(target: EventTarget | null) {
   }
 
   return false;
+}
+
+function scrollFrameFromOutside(event: KeyboardEvent) {
+  const page = getPageScrollElement();
+  if (!page || (event.target instanceof HTMLElement && page.contains(event.target))) return;
+
+  const pageStep = page.clientHeight * 0.9;
+  const steps: Record<string, number> = {
+    ArrowDown: 40,
+    ArrowUp: -40,
+    PageDown: pageStep,
+    PageUp: -pageStep,
+    ' ': event.shiftKey ? -pageStep : pageStep,
+    Home: -page.scrollTop,
+    End: page.scrollHeight,
+  };
+  const step = steps[event.key];
+  if (step === undefined) return;
+  const top = Math.max(0, Math.min(page.scrollTop + step, page.scrollHeight - page.clientHeight));
+  if (top !== page.scrollTop) {
+    event.preventDefault();
+    scrollPageTo(top);
+  }
 }
 
 export function usePageScrollNavigation() {
@@ -131,8 +156,10 @@ export function usePageScrollNavigation() {
         startGesture();
         if (navigateFromScroll(upwardKey ? -80 : 80)) {
           event.preventDefault();
+          return;
         }
       }
+      scrollFrameFromOutside(event);
     }
 
     window.addEventListener('wheel', onWheel, { passive: true });

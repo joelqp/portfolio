@@ -79,7 +79,6 @@
   border-color: var(--color-accent-soft);
   background: var(--color-accent-soft);
   color: var(--color-brand);
-  box-shadow: var(--shadow-brand);
 }
 
 .header a:focus-visible {

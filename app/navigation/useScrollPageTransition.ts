@@ -1,6 +1,39 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate, useNavigationType } from 'react-router';
 import { ScrollPageTransition, type ScrollDirection } from './ScrollPageTransition';
+import { getPageScrollElement, scrollPageTo } from './pageScroll';
+
+const turnProperties = ['axis-x', 'axis-y', 'min-perspective'] as const;
+
+type GeometryPhase = 'old' | 'new' | 'transition';
+type PageGeometry = {
+  headerHeight: number;
+  width: number;
+  height: number;
+};
+
+function measurePageGeometry(): PageGeometry {
+  const header = document.querySelector('header')?.getBoundingClientRect();
+  const frame = getPageScrollElement()?.getBoundingClientRect();
+  const headerHeight = Math.max(0, (header?.bottom ?? frame?.top ?? 0) - (frame?.top ?? 0));
+  return {
+    headerHeight,
+    width: Math.max(1, frame?.width ?? window.innerWidth),
+    height: Math.max(1, (frame?.height ?? window.innerHeight) - headerHeight),
+  };
+}
+
+function setPageGeometry(root: HTMLElement, phase: GeometryPhase, geometry: PageGeometry) {
+  root.style.setProperty(`--page-${phase}-header-height`, `${geometry.headerHeight}px`);
+}
+
+function setTurnGeometry(root: HTMLElement, geometry: PageGeometry) {
+  const diagonal = Math.hypot(geometry.width, geometry.height);
+  // An axis perpendicular to the diagonal lifts the lower-right corner toward the staple.
+  root.style.setProperty('--page-turn-axis-x', `${geometry.height / diagonal}`);
+  root.style.setProperty('--page-turn-axis-y', `${-geometry.width / diagonal}`);
+  root.style.setProperty('--page-turn-min-perspective', `${2 * diagonal}px`);
+}
 
 /** Browser adapter; the animation itself lives in pageTransition.module.css. */
 export function useScrollPageTransition() {
@@ -54,8 +87,10 @@ export function useScrollPageTransition() {
 
     const release = () => {
       root.removeAttribute('data-scroll-transition');
-      root.style.removeProperty('--page-transition-top');
-      root.style.removeProperty('--page-transition-distance');
+      for (const phase of ['old', 'new', 'transition'] as const) {
+        root.style.removeProperty(`--page-${phase}-header-height`);
+      }
+      for (const property of turnProperties) root.style.removeProperty(`--page-turn-${property}`);
     };
 
     coordinator.current = new ScrollPageTransition({
@@ -66,18 +101,29 @@ export function useScrollPageTransition() {
         });
       },
       position: (edge) => {
-        const top = edge === 'bottom' ? document.scrollingElement?.scrollHeight ?? 0 : 0;
-        window.scrollTo({ top, left: 0, behavior: 'instant' });
+        const top = edge === 'bottom' ? getPageScrollElement()?.scrollHeight ?? 0 : 0;
+        scrollPageTo(top);
       },
       prepare: (movement) => {
-        const headerBottom = document.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
-        root.style.setProperty('--page-transition-top', `${headerBottom}px`);
-        root.style.setProperty('--page-transition-distance', `${Math.max(0, window.innerHeight - headerBottom)}px`);
+        const geometry = measurePageGeometry();
+        setPageGeometry(root, 'old', geometry);
+        setPageGeometry(root, 'new', geometry);
+        setPageGeometry(root, 'transition', geometry);
+        setTurnGeometry(root, geometry);
         root.setAttribute('data-scroll-transition', movement);
       },
       release,
       start: animate ? (update) => {
-        const transition = document.startViewTransition(update);
+        const activeCoordinator = coordinator.current;
+        const transition = document.startViewTransition(async () => {
+          await update();
+          if (coordinator.current !== activeCoordinator || !activeCoordinator?.busy) return;
+          // Read the destination after its route commit and layout effects, before capture.
+          const geometry = measurePageGeometry();
+          setPageGeometry(root, 'new', geometry);
+          setPageGeometry(root, 'transition', geometry);
+          if (direction === 'backward') setTurnGeometry(root, geometry);
+        });
         // Capture failure or interruption must not produce unhandled rejections.
         void transition.ready.catch(() => {});
         void transition.updateCallbackDone.catch(() => {});

@@ -30,7 +30,7 @@
       border: 1px solid var(--st-line);
       border-radius: 18px;
       background: var(--st-paper);
-      box-shadow: 0 20px 64px light-dark(rgba(21, 29, 25, .14), rgba(0, 0, 0, .34));
+
     }
 
     #system-trace-portfolio .st-topbar {
@@ -148,7 +148,7 @@
       border: 4px solid var(--st-paper);
       border-radius: 50%;
       background: var(--st-signal);
-      box-shadow: 0 0 0 2px var(--st-signal);
+
     }
 
     #system-trace-portfolio .st-experience {
@@ -214,7 +214,7 @@
     #system-trace-portfolio .st-trace-node:nth-child(3) .st-node-mark { margin-left: 5px; }
     #system-trace-portfolio .st-trace-node:nth-child(4) .st-node-mark { margin-left: 15px; }
     #system-trace-portfolio .st-trace-node.is-active { color: var(--st-ink); }
-    #system-trace-portfolio .st-trace-node.is-active .st-node-mark { border-color: var(--st-signal); background: var(--st-signal); box-shadow: 0 0 0 6px var(--st-signal-soft); }
+    #system-trace-portfolio .st-trace-node.is-active .st-node-mark { border-color: var(--st-signal); background: var(--st-signal);  }
     #system-trace-portfolio .st-node-index { display: block; margin-bottom: 4px; color: var(--st-signal); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
     #system-trace-portfolio .st-node-name { display: block; font-size: 13px; font-weight: 800; }
     #system-trace-portfolio .st-node-detail { display: none; margin-top: 5px; color: var(--st-muted); font-size: 11px; line-height: 1.4; }
@@ -261,7 +261,7 @@
     #system-trace-portfolio .st-map-node-b { left: 42%; top: 49%; }
     #system-trace-portfolio .st-map-node-c { left: 67%; top: 29%; }
     #system-trace-portfolio .st-map-node-d { right: 11%; top: 39%; }
-    #system-trace-portfolio .st-truck { position: absolute; z-index: 2; left: 49%; top: 45%; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; background: var(--st-ink); color: var(--st-paper); box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+    #system-trace-portfolio .st-truck { position: absolute; z-index: 2; left: 49%; top: 45%; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; background: var(--st-ink); color: var(--st-paper);  }
     #system-trace-portfolio .st-demo-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--st-line); }
     #system-trace-portfolio .st-result { color: var(--st-muted); font-size: 11px; }
     #system-trace-portfolio .st-result strong { color: var(--st-ink); font-size: 12px; }
@@ -363,15 +363,15 @@
 #system-trace-portfolio [data-theme=aia] .st-path-art{background-image:var(--st-road-path-image),repeating-linear-gradient(to bottom,var(--st-paper) 0 9px,var(--st-muted) 9px 17px);background-color:var(--st-muted);border-left:3px solid var(--st-muted);border-right:3px solid var(--st-muted);width:13px;left:34px}
 #system-trace-portfolio [data-theme=education] .st-path-art{border:0;width:2px;background:var(--st-line);left:40px}
 #system-trace-portfolio .st-trace-node{position:relative;grid-template-columns:42px minmax(0,1fr);min-height:100px;gap:8px;align-items:start}
-#system-trace-portfolio .st-node-mark,#system-trace-portfolio .st-trace-node:nth-child(n) .st-node-mark{position:relative;display:block;width:25px;height:25px;margin:2px auto 0;background-color:var(--st-panel);border:2px solid var(--st-muted);box-shadow:0 0 0 5px var(--st-paper);color:var(--st-muted)}
-#system-trace-portfolio .st-trace-node.is-active .st-node-mark{background-color:var(--st-panel);border-color:var(--st-signal);color:var(--st-signal);box-shadow:0 0 0 5px var(--st-signal-soft)}
+#system-trace-portfolio .st-node-mark,#system-trace-portfolio .st-trace-node:nth-child(n) .st-node-mark{position:relative;display:block;width:25px;height:25px;margin:2px auto 0;background-color:var(--st-panel);border:2px solid var(--st-muted);color:var(--st-muted)}
+#system-trace-portfolio .st-trace-node.is-active .st-node-mark{background-color:var(--st-panel);border-color:var(--st-signal);color:var(--st-signal);}
 #system-trace-portfolio .st-node-mark.st-icon-card{width:33px;height:23px;border-radius:4px;background-image:var(--st-bank-node-image);background-size:contain}
 #system-trace-portfolio .st-icon-card::after{content:"";position:absolute;left:0;right:0;top:5px;height:4px;background:currentColor}
 #system-trace-portfolio .st-node-mark.st-icon-file{width:23px;height:29px;border-radius:2px;background-image:var(--st-file-node-image);background-size:contain}
 #system-trace-portfolio .st-icon-file::after{content:"";position:absolute;left:4px;top:9px;width:11px;height:7px;border-top:2px solid currentColor;border-bottom:2px solid currentColor}
 #system-trace-portfolio .st-node-mark.st-icon-car{width:33px;height:17px;border-radius:5px;margin-top:7px;background-image:var(--st-vehicle-node-image);background-size:contain}
 #system-trace-portfolio .st-icon-car::before{content:"";position:absolute;left:5px;top:-7px;width:19px;height:8px;border:2px solid currentColor;border-bottom:0;border-radius:5px 5px 0 0;background:var(--st-panel)}
-#system-trace-portfolio .st-icon-car::after{content:"";position:absolute;bottom:-5px;left:4px;width:6px;height:6px;background:currentColor;box-shadow:16px 0 0 currentColor;border-radius:50%}
+#system-trace-portfolio .st-icon-car::after{content:"";position:absolute;bottom:-5px;left:4px;width:22px;height:6px;background:radial-gradient(circle at 3px 3px,currentColor 3px,transparent 3px),radial-gradient(circle at 19px 3px,currentColor 3px,transparent 3px);border-radius:50%}
 #system-trace-portfolio .st-node-name{font-size:13px}#system-trace-portfolio .st-node-detail{font-size:11px}
 #system-trace-portfolio .st-path-note{font-size:11px;line-height:1.5;margin:26px 0 0;color:var(--st-muted)}
 #system-trace-portfolio .st-section-content{padding:38px 4% 30px}

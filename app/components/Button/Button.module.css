@@ -12,15 +12,13 @@
   cursor: pointer;
   transition:
     background-color var(--duration-interaction) ease,
-    box-shadow var(--duration-interaction) ease,
     transform var(--duration-interaction) ease;
 }
 
 .primary {
-  border-color: var(--color-brand-shadow);
+  border-color: var(--color-brand-border);
   background: var(--color-brand);
   color: var(--color-on-brand);
-  box-shadow: var(--shadow-brand);
 }
 
 .primary:hover:not([data-disabled]) {
@@ -31,7 +29,6 @@
   border-color: var(--color-border);
   background: var(--color-surface);
   color: var(--color-brand);
-  box-shadow: var(--shadow-surface);
 }
 
 .secondary:hover:not([data-disabled]) {
@@ -50,7 +47,6 @@
 .primary:active:not([data-disabled]),
 .secondary:active:not([data-disabled]) {
   transform: translateY(calc(var(--relief-depth) - 1px));
-  box-shadow: none;
 }
 
 .button[data-disabled] {

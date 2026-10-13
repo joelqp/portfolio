@@ -40,8 +40,11 @@ export function createNavigationHarness(moduleName, options = {}) {
   const navigations = [];
   const scrollCalls = [];
   const focusCalls = [];
+  const scrollLocationKey = { current: options.scrollLocationKey ?? null };
+  const storage = new Map(Object.entries(options.storage ?? {}));
 
   class Element {
+    listeners = new Map();
     parentElement = null;
     scrollHeight = 100;
     clientHeight = 100;
@@ -50,13 +53,43 @@ export function createNavigationHarness(moduleName, options = {}) {
     control = false;
 
     closest() { return this.control ? this : null; }
+    contains(target) {
+      for (let element = target; element; element = element.parentElement) {
+        if (element === this) return true;
+      }
+      return false;
+    }
     focus(settings) { focusCalls.push({ element: this, settings }); }
+    addEventListener(name, callback) {
+      const entries = this.listeners.get(name) ?? [];
+      entries.push(callback);
+      this.listeners.set(name, entries);
+    }
+    removeEventListener(name, callback) {
+      this.listeners.set(name, (this.listeners.get(name) ?? []).filter((entry) => entry !== callback));
+    }
   }
 
   const body = new Element();
   const main = new Element();
   const heading = new Element();
-  const page = { scrollTop: 500, scrollHeight: 1000, clientHeight: 500, ...options.page };
+  const page = Object.assign(new Element(), {
+    scrollTop: 500, scrollHeight: 1000, clientHeight: 500, overflowY: 'auto', ...options.page,
+    scrollTo(settings) {
+      scrollCalls.push(settings);
+      page.scrollTop = Math.min(Math.max(0, settings.top), page.scrollHeight - page.clientHeight);
+    },
+    getBoundingClientRect() {
+      const top = options.frameTop ?? options.headerTop ?? 0;
+      const bottom = options.frameBottom ?? 500 - top;
+      const left = options.frameLeft ?? options.headerLeft ?? 0;
+      const right = options.frameRight ?? options.headerRight ?? options.viewportWidth ?? 1440;
+      return { top, bottom, left, right, width: right - left, height: bottom - top };
+    },
+  });
+  main.parentElement = page;
+  page.parentElement = body;
+  const documentPage = { scrollTop: 0, scrollHeight: 500, clientHeight: 500, ...options.documentPage };
   const section = new Element();
   section.closest = (selector) => selector === 'main' ? main : null;
   section.querySelector = () => heading;
@@ -73,28 +106,44 @@ export function createNavigationHarness(moduleName, options = {}) {
   const headerRef = {
     current: { getBoundingClientRect: () => ({
       height: options.headerHeight ?? (options.horizontalHeader ? 120 : 0),
-      bottom: options.headerHeight ?? (options.horizontalHeader ? 120 : 0),
+      top: options.headerTop ?? 0,
+      bottom: (options.headerTop ?? 0) + (options.headerHeight ?? (options.horizontalHeader ? 120 : 0)),
+      left: options.headerLeft ?? 0,
+      right: options.headerRight ?? options.viewportWidth ?? 1440,
     }) },
   };
   const document = {
     body,
-    scrollingElement: page,
+    scrollingElement: documentPage,
     getElementById: (id) => options.sectionTops
       ? profileElements.get(id) ?? null
       : id === 'caixa' ? section : null,
-    querySelector: (selector) => selector === 'main' ? main : selector === 'header' ? headerRef.current : null,
+    querySelector: (selector) => selector === 'main' ? main : selector === 'header' ? headerRef.current
+      : selector === '[data-page-scroll]' ? page : null,
     startViewTransition: options.startViewTransition,
     documentElement: Object.assign(new Element(), {
       attributes: new Map(),
-      style: { setProperty() {}, removeProperty() {} },
+      style: {
+        properties: new Map(),
+        setProperty(name, value) { this.properties.set(name, value); },
+        removeProperty(name) { this.properties.delete(name); },
+      },
       setAttribute(name, value) { this.attributes.set(name, value); },
       removeAttribute(name) { this.attributes.delete(name); },
       hasAttribute(name) { return this.attributes.has(name); },
     }),
   };
   const window = {
+    sessionStorage: {
+      getItem(key) { return storage.get(key) ?? null; },
+      setItem(key, value) {
+        if (options.storageThrows) throw new Error('Storage unavailable');
+        storage.set(key, value);
+      },
+    },
+    innerWidth: options.viewportWidth ?? 1440,
     innerHeight: 500,
-    get scrollY() { return page.scrollTop; },
+    get scrollY() { return documentPage.scrollTop; },
     getComputedStyle: (element) => ({ overflowY: element.overflowY, scrollMarginTop: '24px' }),
     matchMedia: (query) => ({ matches: query.includes('prefers-reduced-motion')
       ? options.reducedMotion ?? false
@@ -176,9 +225,16 @@ export function createNavigationHarness(moduleName, options = {}) {
     },
     '../../navigation/useNavigationDimensions': { useNavigationDimensions: () => {} },
     '../../navigation/useProfileSectionNavigation': { useProfileSectionNavigation: () => {} },
+    '../../navigation/usePageScrollRestoration': { usePageScrollRestoration: () => {} },
     './SiteLayout.module.css': { default: {} },
-    '../../styles/pageTransition.module.css': {},
+    '../../styles/pageTransition.module.css': { default: {} },
   };
+  const scrollModule = {};
+  const scrollSource = fs.readFileSync(new URL('../../app/navigation/pageScroll.ts', import.meta.url), 'utf8');
+  vm.runInNewContext(ts.transpileModule(scrollSource, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS },
+  }).outputText, { exports: scrollModule, document });
+  dependencies['./pageScroll'] = scrollModule;
   const modulePath = moduleName === 'SiteLayout'
     ? '../../app/components/SiteLayout/SiteLayout.tsx'
     : `../../app/navigation/${moduleName}.ts`;
@@ -207,7 +263,7 @@ export function createNavigationHarness(moduleName, options = {}) {
   });
 
   return {
-    body, main, heading, section, page, navigations, scrollCalls, focusCalls, document,
+    body, main, heading, section, page, navigations, scrollCalls, focusCalls, document, scrollLocationKey, storage,
     get result() { return result; },
     createTarget(properties) { return Object.assign(new Element(), properties); },
     render(nextLocation = location, nextNavigationType = navigationType) {
@@ -219,7 +275,9 @@ export function createNavigationHarness(moduleName, options = {}) {
       effectIndex = 0;
       if (moduleName === 'SiteLayout') {
         const layout = exports.SiteLayout({ children: null });
-        layout.props.children[1].props.ref.current = main;
+        layout.props.children.props.children[1].props.ref.current = main;
+      } else if (moduleName === 'usePageScrollRestoration') {
+        result = exports[moduleName](scrollLocationKey);
       } else {
         result = exports[moduleName](headerRef);
       }
@@ -232,11 +290,15 @@ export function createNavigationHarness(moduleName, options = {}) {
     },
     dispatch(name, settings = {}) {
       const event = {
-        target: body, defaultPrevented: false,
+        target: main, defaultPrevented: false,
         preventDefault() { this.defaultPrevented = true; },
         ...settings,
       };
-      for (const { callback } of listeners.get(name) ?? []) callback(event);
+      if (name === 'scroll') {
+        for (const callback of page.listeners.get(name) ?? []) callback(event);
+      } else {
+        for (const { callback } of listeners.get(name) ?? []) callback(event);
+      }
       return event;
     },
     dispose() { effectSlots.forEach((slot) => slot.cleanup?.()); },

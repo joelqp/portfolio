@@ -6,10 +6,6 @@
   color: var(--color-text);
 }
 
-.raised {
-  box-shadow: var(--shadow-surface);
-}
-
 .outlined {
   background: var(--color-surface-soft);
 }

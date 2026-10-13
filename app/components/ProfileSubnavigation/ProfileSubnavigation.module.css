@@ -7,7 +7,7 @@
   position: sticky;
   inline-size: var(--navigation-width);
   top: calc(var(--header-height, 0px) + var(--space-3));
-  max-height: calc(100svh - var(--header-height, 0px) - var(--space-5));
+  max-height: calc(100svh - 2 * var(--page-frame-space) - var(--header-height, 0px) - var(--space-5));
   padding: var(--space-3);
   overflow-y: auto;
   scrollbar-width: thin;
@@ -77,7 +77,6 @@
   background: var(--color-accent-soft);
   color: var(--color-brand);
   font-weight: var(--font-weight-medium);
-  box-shadow: var(--shadow-brand);
 }
 
 .link[aria-current='location'] .node {
@@ -98,7 +97,7 @@
     position: static;
     inline-size: auto;
     top: auto;
-    max-height: calc(100svh - var(--header-height, 0px));
+    max-height: calc(100svh - 2 * var(--page-frame-space) - var(--header-height, 0px));
     padding: var(--space-2);
     padding-bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
   }

@@ -3,6 +3,7 @@ import { useLocation, useNavigationType } from 'react-router';
 import { getActiveProfileSection } from './getActiveProfileSection';
 import { profileSectionItems } from './profileSections';
 import { getProfileEntryAnimation } from './getProfileEntryAnimation';
+import { getPageScrollElement } from './pageScroll';
 
 type ActiveSection = {
   locationKey: string;
@@ -33,7 +34,7 @@ export function useActiveProfileSection(headerRef: RefObject<HTMLElement | null>
 
     function updateActiveSection() {
       frame = null;
-      const headerHeight = headerRef.current?.getBoundingClientRect().height ?? 0;
+      const headerBottom = headerRef.current?.getBoundingClientRect().bottom ?? 0;
       const gap = sections.length > 0
         ? parseFloat(window.getComputedStyle(sections[0].element).scrollMarginTop) || 0
         : 0;
@@ -41,20 +42,20 @@ export function useActiveProfileSection(headerRef: RefObject<HTMLElement | null>
         id,
         top: (element.querySelector('h2') ?? element).getBoundingClientRect().top,
       }));
-      const page = document.scrollingElement;
+      const page = getPageScrollElement();
       // Short final sections cannot always reach the reading edge.
       const atPageBottom = page !== null && page.scrollTop > 0 &&
         page.scrollHeight - page.scrollTop - page.clientHeight <= 1;
       if (preserveAnchorSelection && !entering) {
         if (anchorPosition === null) {
-          anchorPosition = window.scrollY;
-        } else if (window.scrollY !== anchorPosition) {
+          anchorPosition = page?.scrollTop ?? 0;
+        } else if (page?.scrollTop !== anchorPosition) {
           preserveAnchorSelection = false;
         }
       }
       const id = preserveAnchorSelection
         ? anchorId ?? null
-        : getActiveProfileSection(positions, headerHeight + gap, atPageBottom);
+        : getActiveProfileSection(positions, headerBottom + gap, atPageBottom);
 
       setActiveSection((previous) => previous?.locationKey === key && previous.id === id
         ? previous
@@ -77,7 +78,8 @@ export function useActiveProfileSection(headerRef: RefObject<HTMLElement | null>
       };
       entryAnimation.finished.then(finishEntry, finishEntry);
     }
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    const page = getPageScrollElement();
+    page?.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleUpdate);
 
     return () => {
@@ -85,7 +87,7 @@ export function useActiveProfileSection(headerRef: RefObject<HTMLElement | null>
       if (frame !== null) {
         window.cancelAnimationFrame(frame);
       }
-      window.removeEventListener('scroll', scheduleUpdate);
+      page?.removeEventListener('scroll', scheduleUpdate);
       window.removeEventListener('resize', scheduleUpdate);
     };
   }, [pathname, hash, key, navigationType, headerRef]);

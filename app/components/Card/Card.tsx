@@ -11,6 +11,6 @@ export function Card({
   ...props
 }: CardProps) {
   return (
-    <div {...props} className={`${styles.card} ${styles[variant]} ${className}`} />
+    <div {...props} className={`${styles.card} ${variant === 'outlined' ? styles.outlined : ''} ${className}`} />
   );
 }

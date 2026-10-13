@@ -5,8 +5,9 @@ import { ProfileSubnavigation } from '../ProfileSubnavigation/ProfileSubnavigati
 import { usePageScrollNavigation } from '../../navigation/usePageScrollNavigation';
 import { useNavigationDimensions } from '../../navigation/useNavigationDimensions';
 import { useProfileSectionNavigation } from '../../navigation/useProfileSectionNavigation';
+import { usePageScrollRestoration } from '../../navigation/usePageScrollRestoration';
 import styles from './SiteLayout.module.css';
-import '../../styles/pageTransition.module.css';
+import transitionStyles from '../../styles/pageTransition.module.css';
 
 export function SiteLayout({ children }: { children: ReactNode }) {
   const scrollLocationKey = usePageScrollNavigation();
@@ -20,6 +21,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   const previousLocation = useRef({ pathname, key });
   useNavigationDimensions(layoutRef, headerRef, profileNavigationRef, isProfilePage);
   useProfileSectionNavigation(headerRef);
+  usePageScrollRestoration(scrollLocationKey);
 
   useEffect(() => {
     const pageChanged = previousLocation.current.pathname !== pathname;
@@ -34,21 +36,23 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   }, [pathname, hash, key, scrollLocationKey]);
 
   return (
-    <div ref={layoutRef} className={`${styles.layout} ${isProfilePage ? styles.profileLayout : ''}`}>
-      <Header headerRef={headerRef} />
-      <main
-        id="contenido"
-        ref={mainRef}
-        tabIndex={-1}
-        className={`${styles.main} ${isProfilePage ? styles.profileMain : ''} ${reserveProfileBottom ? styles.bottomEntry : ''}`}
-      >
-        <div className={styles.content}>{children}</div>
-      </main>
-      {isProfilePage && (
-        <aside data-profile-panel className={styles.profileSidebar}>
-          <ProfileSubnavigation headerRef={headerRef} navigationRef={profileNavigationRef} />
-        </aside>
-      )}
+    <div data-page-scroll className={`${styles.frame} ${transitionStyles.transitionSurface}`}>
+      <div ref={layoutRef} className={`${styles.layout} ${isProfilePage ? styles.profileLayout : ''}`}>
+        <Header headerRef={headerRef} />
+        <main
+          id="contenido"
+          ref={mainRef}
+          tabIndex={-1}
+          className={`${styles.main} ${isProfilePage ? styles.profileMain : ''} ${reserveProfileBottom ? styles.bottomEntry : ''}`}
+        >
+          <div className={styles.content}>{children}</div>
+        </main>
+        {isProfilePage && (
+          <aside data-profile-panel className={styles.profileSidebar}>
+            <ProfileSubnavigation headerRef={headerRef} navigationRef={profileNavigationRef} />
+          </aside>
+        )}
+      </div>
     </div>
   );
 }

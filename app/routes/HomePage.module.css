@@ -1,0 +1,81 @@
+.page {
+  /* Change named areas and each block's alignment to reposition the content. */
+  --home-grid-areas: "identity invitation" "about journey";
+  --home-identity-alignment: start;
+  --home-about-alignment: start center;
+  --home-invitation-alignment: center;
+  --home-journey-alignment: center;
+
+  display: grid;
+  grid-template-areas: var(--home-grid-areas);
+  grid-template-columns: var(--home-grid-columns);
+  grid-template-rows: var(--home-grid-rows);
+  gap: var(--space-7);
+  min-block-size: calc(100svh - 2 * var(--page-frame-space) - var(--header-height, var(--control-height)) - 2 * var(--space-6));
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.identity {
+  grid-area: identity;
+  place-self: var(--home-identity-alignment);
+}
+
+.name {
+  margin: 0;
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-bold);
+}
+
+.role {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+}
+
+.about {
+  grid-area: about;
+  place-self: var(--home-about-alignment);
+}
+
+.invitation {
+  grid-area: invitation;
+  place-self: var(--home-invitation-alignment);
+}
+
+.journey {
+  grid-area: journey;
+  place-self: var(--home-journey-alignment);
+  max-inline-size: 100%;
+}
+
+.textBlock {
+  max-inline-size: var(--home-text-width);
+  margin: 0;
+}
+
+.textBlock h2 {
+  margin: 0 0 var(--space-4);
+}
+
+.textBlock p {
+  margin: 0;
+}
+
+.journeyButton {
+  min-block-size: var(--home-button-height);
+  padding: var(--space-5) var(--space-7);
+  font-size: var(--home-button-font-size);
+  text-align: center;
+  text-decoration: none;
+}
+
+@media (max-width: 40rem) {
+  .page {
+    --home-grid-areas: "identity" "about" "invitation" "journey";
+
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    min-block-size: calc(100svh - 2 * var(--page-frame-space) - var(--header-height, var(--control-height)) - 2 * var(--space-5));
+  }
+}

@@ -4,16 +4,16 @@
   /* Shared palette, derived from Sacramento green. */
   --color-brand: #043927;
   --color-brand-hover: #07523b;
-  --color-brand-shadow: #01251b;
+  --color-brand-border: #01251b;
   --color-on-brand: #ffffff;
   --color-canvas: #f2f7f4;
   --color-surface: #ffffff;
+  --color-paper: #faf9f6;
   --color-surface-soft: #e4efe8;
   --color-accent-soft: #c6e2d1;
   --color-text: #163b2b;
   --color-text-muted: #4f695b;
   --color-border: #9ebbad;
-  --color-surface-shadow: #b7cfc0;
   --color-focus: #147354;
   --color-focus-on-dark: #c6e2d1;
 
@@ -40,15 +40,33 @@
   --radius-card: 0;
   --radius-pill: 0;
   --control-height: 3rem;
-  --content-width: 75rem;
+  --content-width: 85rem;
+  --page-frame-space: var(--space-5);
   --relief-depth: 0.25rem;
-  --shadow-brand: 0 var(--relief-depth) 0 var(--color-brand-shadow);
-  --shadow-surface: 0 var(--relief-depth) 0 var(--color-surface-shadow);
+
+  /* Paper frame: curved lower corners. */
+  --paper-corner-width: 2rem;
+  --paper-corner-height: 0.5rem;
   --duration-interaction: 150ms;
   --duration-panel-entry: 450ms;
   --easing-panel-entry: cubic-bezier(0.22, 1, 0.36, 1);
-  --duration-page-transition: 450ms;
+  --duration-page-transition: 900ms;
   --easing-page-transition: cubic-bezier(0.22, 1, 0.36, 1);
+  --page-turn-angle: 110deg;
+  --page-turn-perspective: clamp(60rem, 150vw, 140rem);
+
+  /* Home: unequal columns and a larger lower row. */
+  --home-grid-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  --home-grid-rows: minmax(min-content, 1fr) minmax(min-content, 1.6fr);
+  --home-text-width: 34rem;
+  --home-button-height: 4.5rem;
+  --home-button-font-size: 1.25rem;
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --page-frame-space: var(--space-3);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
